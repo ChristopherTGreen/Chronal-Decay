@@ -8,17 +8,20 @@ let config = {
     width: 854,
     height: 480,
     parent: 'Blade Cycle',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#d3d3d3',
     scale: {
         zoom: 1
+    },
+    render: {
+        pixelArt: true
     },
     physics: {
         default: 'arcade',
         arcade: {
             gravity: {
-                y: 0
+                y: 300
             },
-            debug: false,
+            debug: true,
         }
     },
     audio: {
@@ -28,7 +31,7 @@ let config = {
     scene: [ Preload, Facility, Abstract ]
 }
 
-let game = new Phaser.game(config)
+let game = new Phaser.Game(config)
 
 // reserve keyboard bindings (might change to cursors)
 let keyLEFT, keyRIGHT, keyUP, keyDOWN, keyQ, keyE, keySPACE
