@@ -4,6 +4,8 @@ class Facility extends Phaser.Scene {
     }
 
     preload() {
+        //this.load.plugin('rextcrpplugin', './lib/tcrp.js', true);
+
 
         console.log('finished facility')
     }
@@ -17,7 +19,9 @@ class Facility extends Phaser.Scene {
 
         this.givenHp = 100
         this.player = new Player(this, game.config.width/2, game.config.height/2 + game.config.height/4, 'character', 0, 'right', this.givenHp)
-    
+        //var recorder = this.plugins.get('rexTCRP').addPlayer(this, config)
+
+
 
         // camera code
         //this.cameras.main.setPostPipeline(Phaser.Renderer.PostFX.ChromaticAberration)
@@ -50,7 +54,13 @@ class Facility extends Phaser.Scene {
         // set collisions
         this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
         terrainLayer.setCollisionByProperty({ collides: true })
+        
         this.physics.add.collider(this.player, terrainLayer)
+
+        // initialize time manager
+        // create past self (optional, might move into scene itself)
+        this.shadow = new Shadow(this, game.config.width/2, game.config.height/2 + game.config.height/4, 'character', 0, 'right', this.hp, 'nothing')
+        this.temporal = new TemporalManager(this, this.player)
     
         // key controls
         keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A)
@@ -64,24 +74,32 @@ class Facility extends Phaser.Scene {
 
     update(time, delta) {
         this.playerFSM.step()
+        this.temporal.update(time, delta)
+
+        if (this.temporal.index == 0 && keyQ.isDown) {
+            this.temporal.setMode('RECORDING')
+            console.log('ah')
+        }
+
+
+        if (this.temporal.mode == 'STATIC' && this.temporal.index > 0 && keyQ.isDown) {
+            this.temporal.index = Math.max(0, this.index - 1)
+            this.temporal.updatePast()
+            console.log('ah')
+        }
 
         // stretch experiment
         this.timer += delta
         const speed = Math.abs(this.player.body.velocity.x)
-        console.log(Phaser.Math.Linear(0.0, 1.0, speed/(this.player.maxVelocityX)))
         if (this.timer >= this.checkInterval && Phaser.Math.Linear(0.0, 1.0, speed/(this.player.maxVelocityX)) > this.currZoom) {
             this.currZoom = Phaser.Math.RoundTo(this.currZoom + this.zoomRate, -5)
-            console.log('ah')
             this.timer -= this.checkInterval
         }
         else if (this.timer >= this.checkInterval && Phaser.Math.Linear(0.0, 1.0, speed/(this.player.maxVelocityX)) < this.currZoom) {
             this.currZoom = Phaser.Math.RoundTo(this.currZoom - this.zoomRate, -5)
-            console.log('ah')
             this.timer -= this.checkInterval
         }
         
-      
-        console.log(this.currZoom)
         if (this.currZoom != 0) this.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 1)
         else this.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 0)
     }

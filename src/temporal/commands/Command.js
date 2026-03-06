@@ -1,11 +1,11 @@
-export default class Command {
-    execute() {
-        throw new Error("Must implement an execute method")
-    }
+// export default class Command {
+//     execute() {
+//         throw new Error("Must implement an execute method")
+//     }
 
-    undo(){
+//     undo(){
 
-    }
+//     }
 
-    // maybe redo
-}
+//     // maybe redo
+// }

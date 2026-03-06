@@ -7,6 +7,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         scene.physics.add.existing(this) // add physics to existing
     
         // properties
+        this.name = 'player'
         this.accelX = 300.0 // maybe make velocity for more control
         this.accelY = -250.0
         this.maxVelocityX = 150
@@ -53,7 +54,7 @@ class IdleState extends State {
         let playerVector = new Phaser.Math.Vector2(0, 0)
         // movement transition
         if(keyLEFT.isDown || keyRIGHT.isDown) {
-            this.stateMachine.transition('jump')
+            this.stateMachine.transition('move')
         }
 
         player.setAccelerationX(player.accelX * playerVector.x)

@@ -4,8 +4,7 @@ class Preload extends Phaser.Scene {
     }
 
     preload() {
-        // load plugin
-        this.load.plugin('tcrp', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexarcadetcrpplugin.min.js', true)
+        
 
 
 

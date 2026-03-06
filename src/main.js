@@ -3,6 +3,7 @@
 
 "use strict"
 
+
 let config = {
     type: Phaser.AUTO,
     width: 854,
@@ -27,6 +28,13 @@ let config = {
     audio: {
         enableWebAudio: true
     },
+    // plugins: {
+    //     global: [{
+    //         key: 'rexTCRP',
+    //         plugin: TCRPPlugin, // find source script
+    //         start: true
+    //     }]
+    // },
 
     scene: [ Preload, Facility, Abstract ]
 }
