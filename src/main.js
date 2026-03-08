@@ -36,7 +36,7 @@ let config = {
     //     }]
     // },
 
-    scene: [ Preload, Facility, Abstract ]
+    scene: [ Preload, Facility, Abstract, Menu, Postcard ]
 }
 
 let game = new Phaser.Game(config)
