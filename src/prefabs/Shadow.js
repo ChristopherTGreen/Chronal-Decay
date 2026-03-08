@@ -42,6 +42,7 @@ class Shadow extends Phaser.Physics.Arcade.Sprite {
     completeStop() {
         this.setAcceleration(0, 0)
         this.setVelocity(0, 0)
+        this.setGravityY(0)
     }
 }
 

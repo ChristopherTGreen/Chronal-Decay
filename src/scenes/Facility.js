@@ -16,14 +16,21 @@ class Facility extends Phaser.Scene {
 
         // creates initial map
         const map = this.add.tilemap('facilityTilemapJSON')
-        const tileset = map.addTilesetImage('basic_ground', 'facilityTilesetImage')
-        const terrainLayer = map.createLayer('Ground', tileset, -300, 0)
+        const tileset_ground = map.addTilesetImage('tilesheet_ground01', 'facilityTilesetImage')
+        const tileset_abstract = map.addTilesetImage('tilesheet_abstract01', 'abstractTilesetImage')
+        this.terrainLayer = map.createLayer('PhysicalGround', tileset_ground, 0, 0)
+        this.abstractLayer = map.createLayer('AbstractGround', tileset_abstract, 0, 0)
 
 
         this.givenHp = 100
-        this.player = new Player(this, game.config.width/2, game.config.height/2 + game.config.height/4, 'character', 0, 'right', this.givenHp)
+        const spawn = map.findObject("Objects", obj => obj.name === "SpawnPoint")
+        console.log(spawn.x)
+        this.player = new Player(this, spawn.x, spawn.y, 'character', 0, 'right', this.givenHp)
         //var recorder = this.plugins.get('rexTCRP').addPlayer(this, config)
         this.curr_comm = 'NONE'
+
+        // create past self
+        this.shadow = new Shadow(this, game.config.width/2, game.config.height/2 + game.config.height/4, 'character', 0, 'right', this.hp, 'nothing')
 
 
         // camera code
@@ -36,15 +43,18 @@ class Facility extends Phaser.Scene {
         // Player camera (anything that doesn't stretch)
         this.playerCam = this.cameras.add(0, 0, this.game.config.width, this.game.config.height)
         this.cameras.main.ignore(this.player)
-        this.playerCam.ignore(terrainLayer)
+        this.cameras.main.ignore(this.abstractLayer)
+        this.playerCam.ignore(this.terrainLayer)
+        this.abstractLayer.setVisible(false)
 
 
         
         // sets camera position
-        //this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
+        this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
+        this.playerCam.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
         //this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
-        this.cameras.main.setZoom(1, 1)
-        this.cameras.main.setSize(this.game.config.width, this.game.config.height)
+        //this.cameras.main.setZoom(0.1, 0.1)
+        //this.cameras.main.setSize(this.game.config.width, this.game.config.height)
         this.cameras.main.startFollow(this.player, true, 0.25, 0.25)
         this.playerCam.startFollow(this.player, true, 0.25, 0.25)
 
@@ -56,15 +66,14 @@ class Facility extends Phaser.Scene {
 
         // set collisions
         this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
-        terrainLayer.setCollisionByProperty({ collides: true })
+        this.terrainLayer.setCollisionByProperty({ collides: true })
         
-        this.physics.add.collider(this.player, terrainLayer)
+        this.physics.add.collider(this.player, this.terrainLayer)
+        this.ghostCollision = this.physics.add.collider(this.player, this.shadow)
 
         // initialize time manager
-        // create past self (optional, might move into scene itself)
-        this.shadow = new Shadow(this, game.config.width/2, game.config.height/2 + game.config.height/4, 'character', 0, 'right', this.hp, 'nothing')
         this.temporal = new TemporalManager(this, this.player)
-        this.physics.add.collider(this.shadow, terrainLayer)
+        this.physics.add.collider(this.shadow, this.terrainLayer)
         this.playerCam.ignore(this.shadow)
     
         // key controls
@@ -84,19 +93,21 @@ class Facility extends Phaser.Scene {
         this.curr_delta = delta
 
         // stretch experiment
-        this.timer += delta
-        const speed = Math.abs(this.player.body.velocity.x)
-        if (this.timer >= this.checkInterval && Phaser.Math.Linear(0.0, 1.0, speed/(this.player.maxVelocityX)) > this.currZoom) {
-            this.currZoom = Phaser.Math.RoundTo(this.currZoom + this.zoomRate, -5)
-            this.timer -= this.checkInterval
+        if (this.temporal.mode == 'static') {
+            this.timer += delta
+            const speed = Math.abs(this.player.body.velocity.x)
+            if (this.timer >= this.checkInterval && Phaser.Math.Linear(0.0, 1.0, speed/(this.player.maxVelocityX)) > this.currZoom) {
+                this.currZoom = Phaser.Math.RoundTo(this.currZoom + this.zoomRate, -5)
+                this.timer -= this.checkInterval
+            }
+            else if (this.timer >= this.checkInterval && Phaser.Math.Linear(0.0, 1.0, speed/(this.player.maxVelocityX)) < this.currZoom) {
+                this.currZoom = Phaser.Math.RoundTo(this.currZoom - this.zoomRate, -5)
+                this.timer -= this.checkInterval
+            }
+            
+            if (this.currZoom != 0) this.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 1)
+            else this.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 0)
         }
-        else if (this.timer >= this.checkInterval && Phaser.Math.Linear(0.0, 1.0, speed/(this.player.maxVelocityX)) < this.currZoom) {
-            this.currZoom = Phaser.Math.RoundTo(this.currZoom - this.zoomRate, -5)
-            this.timer -= this.checkInterval
-        }
-        
-        //if (this.currZoom != 0) this.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 1)
-        //else this.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 0)
     }
 
 }

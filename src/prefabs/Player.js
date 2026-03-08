@@ -158,7 +158,7 @@ class JumpState extends State {
             scene.curr_comm = 'NONE'
         }
 
-        if(player.body.onFloor()) {
+        if(player.body.onFloor() || player.body.touching.down) {
             player.coyote = true
             this.stateMachine.transition('move')
         }
