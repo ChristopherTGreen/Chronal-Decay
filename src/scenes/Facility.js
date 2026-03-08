@@ -38,7 +38,8 @@ class Facility extends Phaser.Scene {
         this.currZoom = 1.0
         this.timer = 0.0
         this.checkInterval = 10
-        this.zoomRate = 0.001
+        this.zoomRateInc = 0.01
+        this.zoomRateDec = 0.001
 
         // Player camera (anything that doesn't stretch)
         this.playerCam = this.cameras.add(0, 0, this.game.config.width, this.game.config.height)
@@ -127,11 +128,11 @@ class Facility extends Phaser.Scene {
             this.timer += delta
             const speed = Math.abs(this.player.body.velocity.x)
             if (this.timer >= this.checkInterval && Phaser.Math.Linear(0.0, 1.0, speed/(this.player.maxVelocityX)) > this.currZoom) {
-                this.currZoom = Phaser.Math.RoundTo(this.currZoom + this.zoomRate, -5)
+                this.currZoom = Phaser.Math.RoundTo(this.currZoom + this.zoomRateInc, -5)
                 this.timer -= this.checkInterval
             }
             else if (this.timer >= this.checkInterval && Phaser.Math.Linear(0.0, 1.0, speed/(this.player.maxVelocityX)) < this.currZoom) {
-                this.currZoom = Phaser.Math.RoundTo(this.currZoom - this.zoomRate, -5)
+                this.currZoom = Phaser.Math.RoundTo(this.currZoom - this.zoomRateDec, -5)
                 this.timer -= this.checkInterval
             }
 
