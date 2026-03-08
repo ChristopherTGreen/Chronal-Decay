@@ -11,6 +11,9 @@ class Facility extends Phaser.Scene {
     }
 
     create() {
+        // variables
+        this.curr_delta = 0
+
         // creates initial map
         const map = this.add.tilemap('facilityTilemapJSON')
         const tileset = map.addTilesetImage('basic_ground', 'facilityTilesetImage')
@@ -20,7 +23,7 @@ class Facility extends Phaser.Scene {
         this.givenHp = 100
         this.player = new Player(this, game.config.width/2, game.config.height/2 + game.config.height/4, 'character', 0, 'right', this.givenHp)
         //var recorder = this.plugins.get('rexTCRP').addPlayer(this, config)
-
+        this.curr_comm = 'NONE'
 
 
         // camera code
@@ -28,7 +31,7 @@ class Facility extends Phaser.Scene {
         this.currZoom = 1.0
         this.timer = 0.0
         this.checkInterval = 10
-        this.zoomRate = 0.001
+        this.zoomRate = 0.005
 
         // Player camera (anything that doesn't stretch)
         this.playerCam = this.cameras.add(0, 0, this.game.config.width, this.game.config.height)
@@ -61,6 +64,8 @@ class Facility extends Phaser.Scene {
         // create past self (optional, might move into scene itself)
         this.shadow = new Shadow(this, game.config.width/2, game.config.height/2 + game.config.height/4, 'character', 0, 'right', this.hp, 'nothing')
         this.temporal = new TemporalManager(this, this.player)
+        this.physics.add.collider(this.shadow, terrainLayer)
+        this.playerCam.ignore(this.shadow)
     
         // key controls
         keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A)
@@ -74,19 +79,9 @@ class Facility extends Phaser.Scene {
 
     update(time, delta) {
         this.playerFSM.step()
-        this.temporal.update(time, delta)
+        this.timeFSM.step()
 
-        if (this.temporal.index == 0 && keyQ.isDown) {
-            this.temporal.setMode('RECORDING')
-            console.log('ah')
-        }
-
-
-        if (this.temporal.mode == 'STATIC' && this.temporal.index > 0 && keyQ.isDown) {
-            this.temporal.index = Math.max(0, this.index - 1)
-            this.temporal.updatePast()
-            console.log('ah')
-        }
+        this.curr_delta = delta
 
         // stretch experiment
         this.timer += delta
@@ -100,7 +95,8 @@ class Facility extends Phaser.Scene {
             this.timer -= this.checkInterval
         }
         
-        if (this.currZoom != 0) this.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 1)
-        else this.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 0)
+        //if (this.currZoom != 0) this.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 1)
+        //else this.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 0)
     }
+
 }

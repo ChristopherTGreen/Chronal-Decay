@@ -1,5 +1,5 @@
 class Shadow extends Phaser.Physics.Arcade.Sprite {
-    constructor (scene, x, y, texture, frame, direction, hp, command) {
+    constructor (scene, x, y, texture, frame, direction, hp) {
         super(scene, x, y, texture, frame)
 
         // add object to existing scene
@@ -19,8 +19,7 @@ class Shadow extends Phaser.Physics.Arcade.Sprite {
         this.initialDist = true
         this.coyoteTime = 2000
         this.coyote = true
-        
-        scene.physics.add.collider(this, scene.terrainLayer)
+        this.command = 'NONE'
 
         // physics
         //const sizeDiffW = 60
@@ -32,37 +31,43 @@ class Shadow extends Phaser.Physics.Arcade.Sprite {
         console.log("called constructor play")
 
         // initialize state machine managing hero (initial state, possible states, state args[])
-        scene.shadowFSM = new StateMachine('idle', {
+        scene.shadowFSM = new StateMachine('idleS', {
             idleS: new IdleShadowState(),
             moveS: new MoveShadowState(),
             jumpS: new JumpShadowState(),
             deathS: new DeathShadowState(),
-        }, [scene, this, command]) // scene context
+        }, [scene, this]) // scene context
+    }
+
+    completeStop() {
+        this.setAcceleration(0, 0)
+        this.setVelocity(0, 0)
     }
 }
 
 
-// IdleState:
+// IdleShadowState:
 // Shadow is currently not moving
 class IdleShadowState extends State {
     // enter initial call
-    enter (scene, shadow, command) {
+    enter (scene, shadow) {
 
     }
 
     // executes every call/frame
-    execute(scene, shadow, command) {
+    execute(scene, shadow) {
         console.log('idle')
+        console.log(shadow.command)
         let shadowVector = new Phaser.Math.Vector2(0, 0)
         // movement transition
-        if(command == 'left'|| command == 'right') {
+        if(shadow.command == 'LEFT'|| shadow.command == 'RIGHT') {
             this.stateMachine.transition('moveS')
         }
 
         shadow.setAccelerationX(shadow.accelX * shadowVector.x)
 
         // jump
-        if(command == 'jump') {
+        if(shadow.command == 'JUMP') {
             shadow.body.setVelocityY(shadow.accelY)
             shadow.coyote = false
 
@@ -81,24 +86,24 @@ class IdleShadowState extends State {
 // Shadow is currently moving
 class MoveShadowState extends State {
     // executes every call/frame
-    execute(scene, shadow, command) {
+    execute(scene, shadow) {
         // use destructuring to make a local copy of the keyboard object
         let shadowVector = new Phaser.Math.Vector2(0, 0)
         console.log('move')
         
         
-        if(command == 'left') {
+        if(shadow.command == 'LEFT') {
             shadow.direction = 'left'
             console.log('left')
             shadowVector.x = -1
-        } else if(command == 'right') {
+        } else if(shadow.command == 'RIGHT') {
             shadow.direction = 'right'
             console.log('right')
             shadowVector.x = 1
         }
 
-        if(command == 'jump' || !shadow.body.onFloor()) {
-            if(command == 'jump') {
+        if(shadow.command == 'JUMP' || !shadow.body.onFloor()) {
+            if(shadow.command == 'JUMP') {
                 shadow.body.setVelocityY(shadow.accelY)
                 shadow.coyote = false
             }
@@ -121,7 +126,7 @@ class MoveShadowState extends State {
 // Shadow is currently jumping
 class JumpShadowState extends State {
     // executes every call/frame
-    execute(scene, shadow, command) {
+    execute(scene, shadow) {
         console.log('jump')
         // use destructuring to make a local copy of the keyboard object
         let shadowVector = new Phaser.Math.Vector2(0, 0)
@@ -137,10 +142,10 @@ class JumpShadowState extends State {
         })
         
         
-        if(command == 'left') {
+        if(shadow.command == 'LEFT') {
             shadow.direction = 'left'
             shadowVector.x = -1
-        } else if(command == 'right') {
+        } else if(shadow.command == 'RIGHT') {
             shadow.direction = 'right'
             shadowVector.x = 1
         }
@@ -167,7 +172,7 @@ class JumpShadowState extends State {
 // Death State:
 // Shadow is killed from age, and restarts game
 class DeathShadowState extends State {
-    enter(scene, shadow, command) {
+    enter(scene, shadow) {
         scene.scene.restart()
     }
 }

@@ -13,6 +13,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.maxVelocityX = 150
         this.maxVelocityY = 300
         this.setMaxVelocity(this.maxVelocityX, this.maxVelocityY)
+        this.setGravityY(300)
 
         this.direction = direction
         this.hp = hp
@@ -64,6 +65,8 @@ class IdleState extends State {
             player.body.setVelocityY(player.accelY)
             player.coyote = false
 
+            scene.curr_comm = 'JUMP'
+
             this.stateMachine.transition('jump')
         }
 
@@ -89,16 +92,22 @@ class MoveState extends State {
             player.direction = 'left'
             console.log('left')
             playerVector.x = -1
+            scene.curr_comm = 'LEFT'
         } else if(keyRIGHT.isDown) {
             player.direction = 'right'
             console.log('right')
             playerVector.x = 1
+            scene.curr_comm = 'RIGHT'
+        }
+        else {
+            scene.curr_comm = 'NONE'
         }
 
         if(keySPACE.isDown || !player.body.onFloor()) {
             if(keySPACE.isDown) {
                 player.body.setVelocityY(player.accelY)
                 player.coyote = false
+                scene.curr_comm = 'JUMP'
             }
             this.stateMachine.transition('jump')
         }
@@ -128,6 +137,7 @@ class JumpState extends State {
         if(keySPACE.isDown && player.coyote) {
             player.body.setVelocityY(player.accelY)
             player.coyote = false
+            scene.curr_comm = 'JUMP'
             
         }
         if (player.coyote) scene.time.delayedCall(player.coyoteTime, () => {
@@ -138,9 +148,14 @@ class JumpState extends State {
         if(keyLEFT.isDown) {
             player.direction = 'left'
             playerVector.x = -1
+            scene.curr_comm = 'LEFT'
         } else if(keyRIGHT.isDown) {
             player.direction = 'right'
             playerVector.x = 1
+            scene.curr_comm = 'RIGHT'
+        }
+        else {
+            scene.curr_comm = 'NONE'
         }
 
         if(player.body.onFloor()) {
