@@ -38,14 +38,14 @@ class Facility extends Phaser.Scene {
         this.currZoom = 1.0
         this.timer = 0.0
         this.checkInterval = 10
-        this.zoomRate = 0.005
+        this.zoomRate = 0.001
 
         // Player camera (anything that doesn't stretch)
         this.playerCam = this.cameras.add(0, 0, this.game.config.width, this.game.config.height)
         this.uiCam = this.cameras.add(0, 0, this.game.config.width, this.game.config.height)
-        this.cameras.main.ignore([this.player, this.abstractLayer])
+        this.cameras.main.ignore([this.player, this.terrainLayer])
         this.uiCam.ignore([this.abstractLayer, this.player, this.terrainLayer, this.abstractLayer])
-        this.playerCam.ignore(this.terrainLayer)
+        this.playerCam.ignore(this.abstractLayer)
         this.abstractLayer.setVisible(false)
 
 
@@ -119,7 +119,7 @@ class Facility extends Phaser.Scene {
         this.curr_delta = delta
 
         // stretch experiment
-        if (this.temporal.mode == 'static') {
+        if (this.temporal.mode == 'STATIC' || this.temporal.mode == 'RECORDING') {
             this.timer += delta
             const speed = Math.abs(this.player.body.velocity.x)
             if (this.timer >= this.checkInterval && Phaser.Math.Linear(0.0, 1.0, speed/(this.player.maxVelocityX)) > this.currZoom) {
@@ -133,6 +133,9 @@ class Facility extends Phaser.Scene {
 
             if (this.currZoom != 0) this.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 1)
             else this.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 0)
+        }
+        else {
+            this.cameras.main.setZoom(1.0, 1.0)
         }
     }
 
