@@ -14,6 +14,7 @@ class Preload extends Phaser.Scene {
         // load assets
         this.load.image('character', 'physical/nonstatic/Player.png')
         this.load.image('facilityTilesetImage', 'physical/static/TilesetPhysical.png')
+        this.load.image('abstractTilesetImage', 'abstract/static/TilesetAbstract.png')
         this.load.tilemapTiledJSON('facilityTilemapJSON', 'physical/static/facility.json')
         
         

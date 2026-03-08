@@ -1,9 +1,16 @@
 {
-    "activeFile": "",
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "physical/static/facility.tmx",
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
+        "": {
+            "scaleInEditor": 1
+        },
         "C:/Users/ctgre/.vscode/vscode_folder_storage/phaser3/CP-Slime-World-master/assets/overworld.tmx": {
             "scale": 0.550703125,
             "selectedLayer": 4,
@@ -19,23 +26,35 @@
             "scaleInDock": 1
         },
         "physical/static/facility.tmx": {
-            "scale": 1,
-            "selectedLayer": 1,
+            "scale": 0.33,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 42.5,
-                "y": 311.5
+                "x": 554.5454545454547,
+                "y": 322.72727272727263
             }
         },
         "physical/static/facility.tmx#basic_ground": {
             "scaleInDock": 1,
             "scaleInEditor": 1
+        },
+        "physical/static/facility.tmx#tilesheet_abstract01": {
+            "scaleInDock": 1
+        },
+        "physical/static/facility.tmx#tilesheet_ground01": {
+            "scaleInDock": 1
         }
     },
+    "last.imagePath": "C:/Users/ctgre/.vscode/vscode_folder_storage/phaser3/Chronal Decay/assets/abstract/static",
     "openFiles": [
+        "physical/static/facility.tmx"
     ],
     "project": "ChronalDecayTileProject.tiled-project",
     "property.type": "bool",
     "recentFiles": [
+        "physical/static/facility.tmx",
         "C:/Users/ctgre/.vscode/vscode_folder_storage/phaser3/CP-Slime-World-master/assets/overworld.tmx"
-    ]
+    ],
+    "tileset.embedInMap": true,
+    "tileset.transparentColor": "#000000",
+    "tileset.useTransparentColor": true
 }
