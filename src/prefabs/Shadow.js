@@ -26,7 +26,7 @@ class Shadow extends Phaser.Physics.Arcade.Sprite {
         //const sizeRateW = 1.92 // only for offset
         //const sizeDiffY = 30
         //const sizeRateY = 1.3 // only for offset
-        this.setSize(this.width, this.height)
+        this.setSize(this.width, this.height/2).setOffset(0, this.height/2)
         this.setDragX(200)
         console.log("called constructor play")
 
@@ -42,6 +42,7 @@ class Shadow extends Phaser.Physics.Arcade.Sprite {
     completeStop() {
         this.setAcceleration(0, 0)
         this.setVelocity(0, 0)
+        this.setGravityY(0)
     }
 }
 

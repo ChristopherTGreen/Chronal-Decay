@@ -36,10 +36,18 @@ let config = {
     //     }]
     // },
 
-    scene: [ Preload, Facility, Abstract ]
+    scene: [ Preload, Facility, Abstract, Menu, Postcard ]
 }
 
 let game = new Phaser.Game(config)
 
 // reserve keyboard bindings (might change to cursors)
 let keyLEFT, keyRIGHT, keyUP, keyDOWN, keyQ, keyE, keySPACE
+
+
+// initial settings
+game.settings = {
+    volume: 1,
+    music: 1,
+    highScore: 0
+}

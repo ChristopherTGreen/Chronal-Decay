@@ -26,9 +26,16 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         //const sizeRateW = 1.92 // only for offset
         //const sizeDiffY = 30
         //const sizeRateY = 1.3 // only for offset
-        this.setSize(this.width, this.height)
+        this.setSize(this.width, this.height/2).setOffset(0, this.height/2)
         this.setDragX(200)
         console.log("called constructor play")
+
+        // sound effects
+        // jump sound
+        this.jumpSound = scene.sound.add('jump-sound', {
+            volume: game.settings.volume
+        })
+
 
         // initialize state machine managing hero (initial state, possible states, state args[])
         scene.playerFSM = new StateMachine('idle', {
@@ -66,6 +73,7 @@ class IdleState extends State {
             player.coyote = false
 
             scene.curr_comm = 'JUMP'
+            player.jumpSound.play()
 
             this.stateMachine.transition('jump')
         }
@@ -108,6 +116,7 @@ class MoveState extends State {
                 player.body.setVelocityY(player.accelY)
                 player.coyote = false
                 scene.curr_comm = 'JUMP'
+                player.jumpSound.play()
             }
             this.stateMachine.transition('jump')
         }
@@ -138,6 +147,7 @@ class JumpState extends State {
             player.body.setVelocityY(player.accelY)
             player.coyote = false
             scene.curr_comm = 'JUMP'
+            player.jumpSound.play()
             
         }
         if (player.coyote) scene.time.delayedCall(player.coyoteTime, () => {
@@ -158,7 +168,7 @@ class JumpState extends State {
             scene.curr_comm = 'NONE'
         }
 
-        if(player.body.onFloor()) {
+        if(player.body.onFloor() || player.body.touching.down) {
             player.coyote = true
             this.stateMachine.transition('move')
         }

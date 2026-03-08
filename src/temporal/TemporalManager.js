@@ -94,6 +94,9 @@ class IdleTimeState extends State {
     enter (scene, manager) {
         manager.history.length = 0
         manager.index = 0
+        scene.ghostCollision.active = false
+        scene.shadow.setVisible(false)
+        scene.shadow.setGravityY(0)
     }
 
     // executes every call/frame
@@ -114,6 +117,8 @@ class RecordState extends State {
     // executes upon entering
     enter(scene, manager) {
         manager.timer = 0
+        scene.terrainLayer.setVisible(false)
+        scene.abstractLayer.setVisible(true)
     }
 
     // executes every call/frame
@@ -145,6 +150,7 @@ class StaticState extends State {
     enter(scene, manager) {
         scene.shadow.setGravityY(0)
         manager.currMaxIndex = manager.history.length
+        scene.shadow.setVisible(true)
     }
 
     // executes every call/frame
@@ -173,6 +179,9 @@ class ReplayState extends State {
     // executes upon entering
     enter(scene, manager) {
         scene.shadow.setGravityY(300)
+        scene.terrainLayer.setVisible(true)
+        scene.abstractLayer.setVisible(false)
+        scene.ghostCollision.active = true
     }
 
     // executes every call/frame
@@ -189,11 +198,11 @@ class ReplayState extends State {
         else {
             scene.shadow.completeStop()
 
-            if (keyE.isDown) {
-                manager.setMode('IDLE')
-                this.stateMachine.transition('idleTime')
-                console.log('ah')
-            }
+            //if (keyE.isDown) {
+            manager.setMode('IDLE')
+            this.stateMachine.transition('idleTime')
+            console.log('ah')
+            //}
         }
     }
 }
