@@ -42,8 +42,9 @@ class Facility extends Phaser.Scene {
 
         // Player camera (anything that doesn't stretch)
         this.playerCam = this.cameras.add(0, 0, this.game.config.width, this.game.config.height)
-        this.cameras.main.ignore(this.player)
-        this.cameras.main.ignore(this.abstractLayer)
+        this.uiCam = this.cameras.add(0, 0, this.game.config.width, this.game.config.height)
+        this.cameras.main.ignore([this.player, this.abstractLayer])
+        this.uiCam.ignore([this.abstractLayer, this.player, this.terrainLayer, this.abstractLayer])
         this.playerCam.ignore(this.terrainLayer)
         this.abstractLayer.setVisible(false)
 
@@ -51,17 +52,14 @@ class Facility extends Phaser.Scene {
         
         // sets camera position
         this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
+        this.uiCam.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
         this.playerCam.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
         //this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
         //this.cameras.main.setZoom(0.1, 0.1)
         //this.cameras.main.setSize(this.game.config.width, this.game.config.height)
         this.cameras.main.startFollow(this.player, true, 0.25, 0.25)
         this.playerCam.startFollow(this.player, true, 0.25, 0.25)
-
-
-
-
-
+        
 
 
         // set collisions
@@ -75,7 +73,13 @@ class Facility extends Phaser.Scene {
         this.temporal = new TemporalManager(this, this.player)
         this.physics.add.collider(this.shadow, this.terrainLayer)
         this.playerCam.ignore(this.shadow)
-    
+
+
+        // create enemy
+        this.enemyEye = new EnemyEye(this, spawn.x, spawn.y, 'enemy', 0, 'right', this.player)
+        this.cameras.main.ignore(this.enemyEye)
+        this.uiCam.ignore(this.enemyEye)
+
         // key controls
         keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A)
         keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D)
@@ -84,11 +88,33 @@ class Facility extends Phaser.Scene {
         keySPACE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
         keyQ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q)
         keyE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E)
+
+        // debug text
+        // display
+        let debugConfig = {
+            fontFamily: 'arial',
+            fontSize: '30px',
+            backgroundColor: '#a4b9c700',
+            color: '#49fff5',
+            align: 'left',
+            padding: {
+                top: 5,
+                bottom: 5,
+            },
+            fixedWidth: 400
+        }
+
+        this.debugText = this.add.text(10, 0, `Mode: ${this.temporal.mode}`, debugConfig).setScrollFactor(1,1).setDepth(2000)
+        this.cameras.main.ignore(this.debugText)
+        this.playerCam.ignore(this.debugText)
     }
 
     update(time, delta) {
         this.playerFSM.step()
         this.timeFSM.step()
+        this.eyeFSM.step()
+
+        this.debugText.setText(`Mode: ${this.temporal.mode}`)
 
         this.curr_delta = delta
 
@@ -104,7 +130,7 @@ class Facility extends Phaser.Scene {
                 this.currZoom = Phaser.Math.RoundTo(this.currZoom - this.zoomRate, -5)
                 this.timer -= this.checkInterval
             }
-            
+
             if (this.currZoom != 0) this.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 1)
             else this.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 0)
         }

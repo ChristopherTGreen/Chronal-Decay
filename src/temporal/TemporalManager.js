@@ -198,11 +198,11 @@ class ReplayState extends State {
         else {
             scene.shadow.completeStop()
 
-            if (keyE.isDown) {
-                manager.setMode('IDLE')
-                this.stateMachine.transition('idleTime')
-                console.log('ah')
-            }
+            //if (keyE.isDown) {
+            manager.setMode('IDLE')
+            this.stateMachine.transition('idleTime')
+            console.log('ah')
+            //}
         }
     }
 }
