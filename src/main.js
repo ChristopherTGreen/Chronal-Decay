@@ -8,7 +8,7 @@ let config = {
     type: Phaser.AUTO,
     width: 854,
     height: 480,
-    parent: 'Blade Cycle',
+    parent: 'Chronal Decay',
     backgroundColor: '#d3d3d3',
     scale: {
         zoom: 1
