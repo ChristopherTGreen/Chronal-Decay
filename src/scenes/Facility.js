@@ -116,8 +116,6 @@ class Facility extends Phaser.Scene {
         this.timeFSM.step()
         this.eyeFSM.step()
 
-        this.debugText.setText(`Mode: ${this.temporal.mode}`) // change this from updating every frame
-
         this.curr_delta = delta
     }
 

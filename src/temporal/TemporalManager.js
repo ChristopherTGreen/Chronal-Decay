@@ -121,7 +121,9 @@ class IdleTimeState extends State {
         scene.ghostCollision.active = false
         scene.shadow.setVisible(false)
         scene.shadow.setGravityY(0)
-        
+
+        // update text
+        scene.debugText.setText(`Mode: ${manager.mode}`)
     }
 
     // executes every call/frame
@@ -144,6 +146,9 @@ class RecordState extends State {
         manager.timer = 0
         scene.terrainLayer.setVisible(false)
         scene.abstractLayer.setVisible(true)
+
+        // update text
+        scene.debugText.setText(`Mode: ${manager.mode}`)
     }
 
     // executes every call/frame
@@ -157,15 +162,14 @@ class RecordState extends State {
         manager.cameraUpdate(scene.curr_delta)
 
         if (manager.timer >= manager.timeMax) {
-            this.stateMachine.transition('static')
             manager.setMode('STATIC')
+            this.stateMachine.transition('static')
         }
 
 
         if (keyQ.isDown && manager.timer > manager.timeMin) {
-            this.stateMachine.transition('static')
             manager.setMode('STATIC')
-            console.log('ah')
+            this.stateMachine.transition('static')
         }
     }
 }
@@ -182,6 +186,9 @@ class StaticState extends State {
         // frees camera to prevent shifting of camera when expanding
         scene.cameras.main.removeBounds();
         scene.playerCam.removeBounds();
+
+        // update text
+        scene.debugText.setText(`Mode: ${manager.mode}`)
     }
 
     // executes every call/frame
@@ -222,6 +229,9 @@ class ReplayState extends State {
         scene.cameras.main.setBounds(0, 0, scene.map.widthInPixels, scene.map.heightInPixels);
         scene.playerCam.setBounds(0, 0, scene.map.widthInPixels, scene.map.heightInPixels);
         scene.cameras.main.setZoom(1.0, 1.0)
+
+        // update text
+        scene.debugText.setText(`Mode: ${manager.mode}`)
     }
 
     // executes every call/frame
@@ -241,7 +251,6 @@ class ReplayState extends State {
             //if (keyE.isDown) {
             manager.setMode('IDLE')
             this.stateMachine.transition('idleTime')
-            console.log('ah')
             //}
         }
     }
