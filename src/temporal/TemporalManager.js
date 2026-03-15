@@ -11,6 +11,10 @@ class TemporalManager {
         this.timeMax = 10000 // max time in static
         this.currMaxIndex = 0
 
+        // variables for camera
+        this.worldDelta = 0.0
+        this.currZoom = 1.0
+
         // initialize state machine temporal manager (initial state, possible states, state args[])
         scene.timeFSM = new StateMachine('idleTime', {
             idleTime: new IdleTimeState(),
@@ -85,6 +89,26 @@ class TemporalManager {
         
         
     }
+
+
+    // camera process/cycle
+    // variables 
+    cameraUpdate(delta, playerRef = this.object, checkInterval = 10.0, zoomRateInc = 0.01, zoomRateDec = 0.001) {
+        this.worldDelta += delta
+
+        const speed = Math.abs(playerRef.body.velocity.x)
+        if (this.worldDelta >= checkInterval && Phaser.Math.Linear(0.0, 1.0, speed/(playerRef.maxVelocityX)) > this.currZoom) {
+            this.currZoom = Phaser.Math.RoundTo(this.currZoom + zoomRateInc, -5)
+            this.worldDelta -= checkInterval
+            }
+        else if (this.worldDelta >= checkInterval && Phaser.Math.Linear(0.0, 1.0, speed/(playerRef.maxVelocityX)) < this.currZoom) {
+            this.currZoom = Phaser.Math.RoundTo(this.currZoom - zoomRateDec, -5)
+            this.worldDelta -= checkInterval
+        }
+
+        if (this.currZoom != 0) this.scene.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 1)
+        else this.scene.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 0)
+    }
 }
 
 // IdleTimeState:
@@ -97,6 +121,7 @@ class IdleTimeState extends State {
         scene.ghostCollision.active = false
         scene.shadow.setVisible(false)
         scene.shadow.setGravityY(0)
+        
     }
 
     // executes every call/frame
@@ -127,7 +152,9 @@ class RecordState extends State {
         
         manager.record(scene.curr_comm)
 
+        // handle zoom updates and manager capacity tracking
         manager.timer += scene.curr_delta
+        manager.cameraUpdate(scene.curr_delta)
 
         if (manager.timer >= manager.timeMax) {
             this.stateMachine.transition('static')
@@ -151,11 +178,19 @@ class StaticState extends State {
         scene.shadow.setGravityY(0)
         manager.currMaxIndex = manager.history.length
         scene.shadow.setVisible(true)
+
+        // frees camera to prevent shifting of camera when expanding
+        scene.cameras.main.removeBounds();
+        scene.playerCam.removeBounds();
     }
 
     // executes every call/frame
     execute(scene, manager) {
         console.log('static')
+        console.log(scene.curr_delta)
+
+        // handle zoom updates
+        manager.cameraUpdate(scene.curr_delta)
         
         console.log(manager.index)
         console.log(manager.currMaxIndex)
@@ -182,6 +217,11 @@ class ReplayState extends State {
         scene.terrainLayer.setVisible(true)
         scene.abstractLayer.setVisible(false)
         scene.ghostCollision.active = true
+
+        // reset camera to world state boundaries
+        scene.cameras.main.setBounds(0, 0, scene.map.widthInPixels, scene.map.heightInPixels);
+        scene.playerCam.setBounds(0, 0, scene.map.widthInPixels, scene.map.heightInPixels);
+        scene.cameras.main.setZoom(1.0, 1.0)
     }
 
     // executes every call/frame

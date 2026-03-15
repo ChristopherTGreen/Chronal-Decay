@@ -119,31 +119,6 @@ class Facility extends Phaser.Scene {
         this.debugText.setText(`Mode: ${this.temporal.mode}`) // change this from updating every frame
 
         this.curr_delta = delta
-
-        // stretch experiment (make this into a state machine)
-        if (this.temporal.mode == 'STATIC' || this.temporal.mode == 'RECORDING') {
-            this.cameras.main.removeBounds();
-            this.playerCam.removeBounds();
-
-            this.timer += delta
-            const speed = Math.abs(this.player.body.velocity.x)
-            if (this.timer >= this.checkInterval && Phaser.Math.Linear(0.0, 1.0, speed/(this.player.maxVelocityX)) > this.currZoom) {
-                this.currZoom = Phaser.Math.RoundTo(this.currZoom + this.zoomRateInc, -5)
-                this.timer -= this.checkInterval
-            }
-            else if (this.timer >= this.checkInterval && Phaser.Math.Linear(0.0, 1.0, speed/(this.player.maxVelocityX)) < this.currZoom) {
-                this.currZoom = Phaser.Math.RoundTo(this.currZoom - this.zoomRateDec, -5)
-                this.timer -= this.checkInterval
-            }
-
-            if (this.currZoom != 0) this.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 1)
-            else this.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 0)
-        }
-        else {
-            this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
-            this.playerCam.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
-            this.cameras.main.setZoom(1.0, 1.0)
-        }
     }
 
 }
