@@ -1,34 +1,61 @@
 class EnemyEye extends Phaser.Physics.Arcade.Sprite {
-    constructor (scene, x, y, texture, frame, direction, target) {
+    constructor (scene, x, y, texture, frame, direction, target, shadTarget) {
         super(scene, x, y, texture, frame)
 
         // add object to existing scene
         scene.add.existing(this)    // add to existing
         scene.physics.add.existing(this) // add physics to existing
+        
     
-        // properties
-        this.accelX = 125.0
+        // speed properties
+        this.accelX = 100.0
         this.accelY = 50.0
+        this.maxSpeedX = 100
+        this.maxSpeedY = 50
+        this.setMaxVelocity(this.maxSpeedX, this.maxSpeedY)
+        this.slowingRadiusX = this.maxSpeedX / 1.0
+        this.slowingRadiusY = this.maxSpeedY / 1.0
 
+        // properties
         this.direction = direction
         this.firing = false
-        this.trackingDist = 40 // tracking distance for both x/y (optional, good if the collision process removes the setVelocity to zero, and disabling firing)
-        this.trackingMOE = 20 // margin of error for tracking dist, in which it starts going back and forth within this area (sensitive due to being tied to vel)
         this.firingRange = 200
         this.firingLimitR = 50
         this.hp = 100.0
         this.target = target
+        this.shadTarget = shadTarget
+        this.shadRatio = 4 // division or sensitivity applied to distance to increase chance of chasing shadow
+        this.targetGivenLoc = new Phaser.Math.Vector2(target.x, target.y)
+
+        this.found = false // variable for determining which state if in watchState, should transition to
+
+        // behavior properties (more modular, more non-deterministic or behavioral)
+        this.sensitivity = 5
+        this.trackingDist = 40 // tracking distance for both x/y (optional, good if the collision process removes the setVelocity to zero, and disabling firing)
+        this.trackingMOE = 10 // margin of error for tracking dist, in which it starts going back and forth within this area (sensitive due to being tied to vel)
+        this.watchingProb = 0.25 // likely hood to enter watching state when locating player
+        this.guidingMargin = 100.0 // margin of error for patrolling with semi-guidance tips
+        this.freqTips = 7000.0 // frequency of tips in ms
+
+        // behavioral distance properties
+        this.overshootDist = 75.0 // overshoot distance, until waiting for new information
+        this.detectionDist = 25.0 // detection distance to move to chase
+        this.loseDist = 100.0 // detection distance to lose track
+
+        // timer
+        this.timer = 0
 
         // physics
         this.setImmovable(true)
         this.body.setAllowGravity(false)
         this.setDragX(100)
-        this.setDragY(25)
+        this.setDragY(50)
         console.log("called constructor")
 
         // initialize state machine managing eye enemy (initial state, possible states, state args[])
-        scene.eyeFSM = new StateMachine('chase', {
+        scene.eyeFSM = new StateMachine('patrol', {
             patrol: new PatrolState(),
+            watch: new WatchState(),
             chase: new ChaseState(),
             charge: new ChargeState(),
             fire: new FireState()
@@ -37,55 +64,170 @@ class EnemyEye extends Phaser.Physics.Arcade.Sprite {
 }
 
 // PatrolState
-// Patrols the map, has a chance of finding the enemy if close enough
+// 1) Patrols the map, has a chance of finding the enemy if close enough
+// 2) Switches to chase if player is in abstract world
+// 3) Will occasionally watch, waiting, observing, if it reaches location soon enough, and overshoots
 class PatrolState extends State {
-    // WIP
-}
+    // executes upon entering
+    enter(scene, enemy, target) {
+        console.log('patrol')
+    }
 
-// ChaseState
-// Chases the closest player-like entity
-class ChaseState extends State {
     // executes every call/frame
     execute(scene, enemy, target) {
-        // x movement
-        // direction found through boolean
-        const directionX = (target.x > enemy.x) ? 1 : -1
-        const distanceX = Math.abs(target.x - enemy.x)
-        const distance = Math.abs(Math.pow(Math.pow(target.x - enemy.x, 2) + Math.pow(target.y - enemy.y, 2), 1/2))
+        // update current position of target location
+        enemy.timer += scene.curr_delta
+        if (enemy.timer > enemy.freqTips) {
+            enemy.timer = 0
+            console.log("new position")
+            // randomly given location for a hint (think alien isolation kind of)
+            enemy.targetGivenLoc = new Phaser.Math.Vector2(target.x + Phaser.Math.Between(-enemy.guidingMargin, enemy.guidingMargin), target.y + Phaser.Math.Between(-enemy.guidingMargin, enemy.guidingMargin))
+        }
 
-        const avoidRate = 8
-        const avoidPlayerRate = 4
-        
         let enemyVector = new Phaser.Math.Vector2(0, 0)
 
-        // aligns itself with enemy on the x axis, before slowing down
-        // secondary condition, if player is too close, will cancel 
-        if (distance > enemy.trackingDist && distanceX < enemy.trackingMOE * avoidPlayerRate*2) {
-            // if outside zone, close in, if too close, pull away
-            if (distanceX < enemy.trackingMOE * avoidPlayerRate) enemyVector.x = (directionX > 0) ? 1 : -1
-            else enemyVector.x = (directionX > 0) ? 1 : -1
+        // detection
+        const directionX = (enemy.targetGivenLoc.x > enemy.x) ? 1 : -1
+        const directionY = (enemy.targetGivenLoc.y > enemy.y) ? 1 : -1
+
+        const distance = Math.abs(Math.pow(Math.pow(enemy.targetGivenLoc.x  - enemy.x, 2) + Math.pow(enemy.targetGivenLoc.y - enemy.y, 2), 1/2))
+        const distanceX = Math.abs(enemy.targetGivenLoc.x - enemy.x)
+        const distanceY = Math.abs(enemy.targetGivenLoc.y - enemy.y)
+
+        // slowdown calculation to prevent overshooting, and movement
+        if (distanceX < enemy.slowingRadiusX) {
+            enemyVector.x = directionX * (enemy.accelX * (distanceX / enemy.slowingRadiusX))
+        }
+        else if (distanceX > enemy.trackingMOE) enemyVector.x = directionX * enemy.accelX
+        if (distanceY < enemy.slowingRadiusY) {
+            enemyVector.y = directionY * (enemy.accelY * (distanceY / enemy.slowingRadiusY))
+        }
+        else if (distanceY > enemy.trackingMOE) enemyVector.y = directionY * enemy.accelY
+
+        if (distance <= enemy.trackingMOE) {
+            this.stateMachine.transition('watch')
         }
 
-        enemy.body.setAccelerationX(enemy.accelX * enemyVector.x)
+        console.log(enemy.targetGivenLoc)
+        enemy.body.setAcceleration(enemyVector.x, enemyVector.y)
 
-        // y movement
-        // finds distance on the y
-        // very similar to soldierbike, but will always try to be high up slightly
-        // note: two cases, player or cycle, player means less vertical height, cycle means more height (doesn't stop moving from distance)
-        const distanceY = target.y - enemy.y
+        const playerDistance = Math.abs(Math.pow(Math.pow(target.x  - enemy.x, 2) + Math.pow(target.y - enemy.y, 2), 1/2))
 
-        // aligns itself with enemy above or below, relative to player's y axis, and closest position
-        if (distance > enemy.trackingDist && enemy.y < target.y && distanceY + (1 + Math.abs(enemy.body.acceleration.y/10)) > enemy.trackingMOE*avoidRate) {
-            console.log("eye: going roughly above target, downwards")
-            enemyVector.y = 1
+        if (playerDistance < enemy.detectionDist || scene.manager.mode === 'STATIC' || scene.manager.mode === 'REPLAY') {
+            enemy.found = true
+            const watchRand = Phaser.Math.Between(0, 100)
+
+            if (watchRand > enemy.watchingProb * 100) this.stateMachine.transition('chase')
+            else this.stateMachine.transition('watch')
         }
-        else if (distance > enemy.trackingDist && distanceY < enemy.trackingMOE * avoidPlayerRate){
-            console.log("eye: too low, rising")
-            enemyVector.y = -1
-        }
-
-        enemy.body.setAccelerationY(enemy.accelY * enemyVector.y)
+    }
+}
+// WatchState
+// 1) Watches from a position, not moving, waiting for a new location hint, or player to stumble into them
+// 2) Switches to chase if player is in abstract world
+class WatchState extends State {
+    // executes upon entering
+    enter(scene, enemy, target) {
+        enemy.timer = Phaser.Math.Between(0, enemy.timer)
         
+        console.log('watch')
+    }
+
+    // executes every call/frame
+    execute(scene, enemy, target) {
+        // update current position of target location
+        enemy.timer += scene.curr_delta
+        if (enemy.timer > enemy.freqTips) {
+            enemy.timer = 0
+            console.log("new position")
+            // randomly given location for a hint (think alien isolation kind of)
+            enemy.targetGivenLoc = new Phaser.Math.Vector2(target.x + Phaser.Math.Between(-enemy.guidingMargin, enemy.guidingMargin), target.y + Phaser.Math.Between(-enemy.guidingMargin, enemy.guidingMargin))
+
+            if (!enemy.found) this.stateMachine.transition('patrol')
+            else this.stateMachine.transition('chase')
+        }
+
+        let enemyVector = new Phaser.Math.Vector2(0, 0)
+
+        // detection
+        const directionX = (enemy.targetGivenLoc.x > enemy.x) ? 1 : -1
+        const directionY = (enemy.targetGivenLoc.y > enemy.y) ? 1 : -1
+
+        const distance = Math.abs(Math.pow(Math.pow(enemy.targetGivenLoc.x  - enemy.x, 2) + Math.pow(enemy.targetGivenLoc.y - enemy.y, 2), 1/2))
+
+        if (distance > enemy.overshootDist) {
+            enemy.body.setAcceleration(enemyVector.x, enemyVector.y)
+        }
+    }
+}
+
+
+
+// ChaseState
+// 1) Chases the closest player-like entity
+// 2) Will get into firing range, to transition into charge
+// 3) If in physical world, can lose player
+class ChaseState extends State {
+    // executes upon entering
+    enter(scene, enemy, target) {
+        
+        
+        console.log('chase')
+    }
+    
+    // executes every call/frame
+    execute(scene, enemy, target) {
+        // closest target
+        if (scene.manager.mode == 'REPLAY' && Phaser.Math.Distance.Between(enemy.x, enemy.y, enemy.shadTarget.x, enemy.shadTarget.y) * enemy.shadRatio > Phaser.Math.Distance.Between(enemy.x, enemy.y, target.x, target.y)) {
+            enemy.targetGivenLoc.x = enemy.shadTarget.x
+            enemy.targetGivenLoc.y = enemy.shadTarget.y
+        }
+        else {
+            enemy.targetGivenLoc.x = target.x
+            enemy.targetGivenLoc.y = target.y
+        }
+
+
+        let enemyVector = new Phaser.Math.Vector2(0, 0)
+
+        // detection
+        const directionX = (enemy.targetGivenLoc.x > enemy.x) ? 1 : -1
+        const directionY = (enemy.targetGivenLoc.y > enemy.y) ? 1 : -1
+
+        const distance = Math.abs(Math.pow(Math.pow(enemy.targetGivenLoc.x  - enemy.x, 2) + Math.pow(enemy.targetGivenLoc.y - enemy.y, 2), 1/2))
+        const distanceX = Math.abs(enemy.targetGivenLoc.x - enemy.x)
+        const distanceY = Math.abs(enemy.targetGivenLoc.y - enemy.y)
+
+
+
+        // slowdown calculation to prevent overshooting, and movement
+        if (distanceX < enemy.slowingRadiusX) {
+            enemyVector.x = directionX * (enemy.accelX * (distanceX / enemy.slowingRadiusX))
+        }
+        else if (distanceX > enemy.trackingMOE) enemyVector.x = directionX * enemy.accelX
+        if (distanceY < enemy.slowingRadiusY) {
+            enemyVector.y = directionY * (enemy.accelY * (distanceY / enemy.slowingRadiusY))
+        }
+        else if (distanceY > enemy.trackingMOE) enemyVector.y = directionY * enemy.accelY
+
+        enemyVector.x = (enemyVector.x - enemy.body.velocity.x) * enemy.sensitivity
+        enemyVector.y = (enemyVector.y - enemy.body.velocity.y) * enemy.sensitivity
+
+        console.log(enemy.body.acceleration)
+
+        enemy.body.setAcceleration(enemyVector.x, enemyVector.y)
+
+        if ((scene.manager.mode == 'IDLE' || scene.manager.mode == 'RECORDING') && distance > enemy.loseDist) {
+            enemy.found = false
+            console.log('lost target, continuing patrol')
+            this.stateMachine.transition('patrol')
+        }
+
+        
+        if (distance <= enemy.trackingMOE) {
+            // this will determine firing range?
+        }
+
         // detection to fire & charge weapon
         // if (distance < enemy.firingRange && distance > enemy.firingLimitR && !enemy.firing) {
         //     enemy.firing = true

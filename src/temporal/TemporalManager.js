@@ -43,6 +43,8 @@ class TemporalManager {
             this.history.push({
                 x: this.object.x,
                 y: this.object.y,
+                velX: this.object.body.velocity.x,
+                velY: this.object.body.velocity.y,
                 command: comm,
                 //anim: this.object.anims.currentAnim.key, // maybe, will probably be a trouble child
                 flipX: this.object.flipX, // might get rid of depending on animations
@@ -53,6 +55,8 @@ class TemporalManager {
             this.history.push({
                 x: this.object.x,
                 y: this.object.y,
+                velX: this.object.body.velocity.x,
+                velY: this.object.body.velocity.y,
                 flipX: this.object.flipX, // might get rid of depending on animations
                 state: this.object.playerFSM
             })
@@ -70,7 +74,7 @@ class TemporalManager {
         }
     }
 
-    // update shadow to go to the past
+    // update shadow to go to the past, using positions
     updatePast() {
         const data = this.history[this.index]
         if (!data) return
@@ -87,7 +91,14 @@ class TemporalManager {
 
         this.scene.shadow.command = data.command
         
-        
+    }
+
+    // updates shadow with initial velocity when playing back, in order to prevent issues in playback
+    updateVelOnce() {
+        const data = this.history[this.index]
+        if (!data) return
+
+        this.scene.shadow.setVelocity(data.velX, data.velY)
     }
 
 
@@ -106,8 +117,14 @@ class TemporalManager {
             this.worldDelta -= checkInterval
         }
 
-        if (this.currZoom != 0) this.scene.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 1)
-        else this.scene.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 0)
+        if (this.currZoom != 0) {
+            this.scene.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 1)
+            //this.scene.enemyCam.setZoom(Phaser.Math.Linear(0.0, 1.0, 1.0 - this.currZoom), 1)
+        }
+        else {
+            this.scene.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 0)
+            //this.scene.enemyCam.setZoom(Phaser.Math.Linear(0.0, 1.0, 1.0 - this.currZoom), 0)
+        }
     }
 }
 
@@ -121,6 +138,17 @@ class IdleTimeState extends State {
         scene.ghostCollision.active = false
         scene.shadow.setVisible(false)
         scene.shadow.setGravityY(0)
+
+
+        scene.terrainLayer.setVisible(true)
+        scene.abstractLayer.setVisible(false)
+
+        // reset camera to world state boundaries
+        scene.cameraTrackList.forEach((cam) => {
+            cam.setBounds(0, 0, scene.map.widthInPixels, scene.map.heightInPixels)
+            cam.setZoom(1.0, 1.0)
+        })
+        scene.cameras.main.setZoom(1.0, 1.0)
 
         // update text
         scene.debugText.setText(`Mode: ${manager.mode}`)
@@ -144,8 +172,6 @@ class RecordState extends State {
     // executes upon entering
     enter(scene, manager) {
         manager.timer = 0
-        scene.terrainLayer.setVisible(false)
-        scene.abstractLayer.setVisible(true)
 
         // update text
         scene.debugText.setText(`Mode: ${manager.mode}`)
@@ -159,7 +185,6 @@ class RecordState extends State {
 
         // handle zoom updates and manager capacity tracking
         manager.timer += scene.curr_delta
-        manager.cameraUpdate(scene.curr_delta)
 
         if (manager.timer >= manager.timeMax) {
             manager.setMode('STATIC')
@@ -183,9 +208,13 @@ class StaticState extends State {
         manager.currMaxIndex = manager.history.length
         scene.shadow.setVisible(true)
 
+        scene.terrainLayer.setVisible(false)
+        scene.abstractLayer.setVisible(true)
+
         // frees camera to prevent shifting of camera when expanding
-        scene.cameras.main.removeBounds();
-        scene.playerCam.removeBounds();
+        scene.cameraTrackList.forEach((cam) => {
+            cam.removeBounds()
+        })
 
         // update text
         scene.debugText.setText(`Mode: ${manager.mode}`)
@@ -221,14 +250,9 @@ class ReplayState extends State {
     // executes upon entering
     enter(scene, manager) {
         scene.shadow.setGravityY(300)
-        scene.terrainLayer.setVisible(true)
-        scene.abstractLayer.setVisible(false)
         scene.ghostCollision.active = true
 
-        // reset camera to world state boundaries
-        scene.cameras.main.setBounds(0, 0, scene.map.widthInPixels, scene.map.heightInPixels);
-        scene.playerCam.setBounds(0, 0, scene.map.widthInPixels, scene.map.heightInPixels);
-        scene.cameras.main.setZoom(1.0, 1.0)
+        manager.updateVelOnce()
 
         // update text
         scene.debugText.setText(`Mode: ${manager.mode}`)
@@ -237,6 +261,9 @@ class ReplayState extends State {
     // executes every call/frame
     execute(scene, manager) {
         console.log('replay')
+
+        // handle zoom updates
+        manager.cameraUpdate(scene.curr_delta)
 
         if (manager.index < manager.currMaxIndex) {
             manager.updateForward()

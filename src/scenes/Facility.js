@@ -49,7 +49,7 @@ class Facility extends Phaser.Scene {
         // create past self
         this.shadow = new Shadow(this, game.config.width/2, game.config.height/2 + game.config.height/4, 'shadow', 0, 'right', this.hp, 'nothing')
         // create enemy
-        this.enemyEye = new EnemyEye(this, spawn.x, spawn.y, 'enemy', 0, 'right', this.player)
+        this.enemyEye = new EnemyEye(this, spawn.x, spawn.y -1000, 'enemy', 0, 'right', this.player, this.shadow).setDepth(-10)
 
         // camera code
         //this.cameras.main.setPostPipeline(Phaser.Renderer.PostFX.ChromaticAberration)
@@ -62,14 +62,17 @@ class Facility extends Phaser.Scene {
         // Player camera (anything that doesn't stretch)
         this.playerCam = this.cameras.add(0, 0, this.game.config.width, this.game.config.height)
         this.uiCam = this.cameras.add(0, 0, this.game.config.width, this.game.config.height)
-        this.cameras.main.ignore([this.player, this.terrainLayer])
+        this.enemyCam = this.cameras.add(0, 0, this.game.config.width, this.game.config.height)
 
         // lists of objects and what they ignore
         const mainIgnoreList = [this.player, this.terrainLayer, this.enemyEye, this.debugText]
-        const playerIgnoreList = [this.shadow, this.abstractLayer, this.debugText]
+        const playerIgnoreList = [this.shadow, this.abstractLayer, this.enemyEye, this.debugText]
         const uiIgnoreList = [this.terrainLayer, this.abstractLayer, this.player, this.shadow, this.enemyEye]
+        const enemyIgnoreList = [this.terrainLayer, this.abstractLayer, this.player, this.shadow]  
+        this.cameraTrackList = [this.cameras.main, this.playerCam, this.enemyCam]
         this.cameras.main.ignore(mainIgnoreList)
         this.playerCam.ignore(playerIgnoreList)
+        this.enemyCam.ignore(enemyIgnoreList)
         this.uiCam.ignore(uiIgnoreList)
         this.abstractLayer.setVisible(false)
 
@@ -79,11 +82,13 @@ class Facility extends Phaser.Scene {
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels)
         this.uiCam.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels)
         this.playerCam.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels)
+        this.enemyCam.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels)
         //this.physics.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels)
         //this.cameras.main.setZoom(0.1, 0.1)
         //this.cameras.main.setSize(this.game.config.width, this.game.config.height)
         this.cameras.main.startFollow(this.player, true, 1, 1)
         this.playerCam.startFollow(this.player, true, 1, 1)
+        this.enemyCam.startFollow(this.player, true, 1, 1)
         
 
 
@@ -98,7 +103,7 @@ class Facility extends Phaser.Scene {
         this.physics.add.collider(this.shadow, this.terrainLayer)
 
         // initialize time manager
-        this.temporal = new TemporalManager(this, this.player)
+        this.manager = new TemporalManager(this, this.player)
 
 
         // key controls
