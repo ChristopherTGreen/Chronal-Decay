@@ -6,6 +6,20 @@ class Facility extends Phaser.Scene {
     preload() {
         //this.load.plugin('rextcrpplugin', './lib/tcrp.js', true);
 
+        // animation UI
+        this.scanTime = 1000 // scantime, affects time to scan and get new information
+        this.scanDuration = 600 // scanduration, period of knowledge
+        this.anims.create({
+            key: 'scanning',
+            frames: this.anims.generateFrameNumbers('uiScan', {
+                frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 0]
+            }),
+            framerate: 1,
+            duration: this.scanDuration, // ms
+            repeat: -1,
+            repeatDelay: this.scanTime, // ms
+        })
+
 
         console.log('finished facility')
     }
@@ -36,7 +50,13 @@ class Facility extends Phaser.Scene {
             fixedWidth: 400
         }
 
-        this.debugText = this.add.text(10, 0, `Mode: Idle`, debugConfig).setScrollFactor(1,1).setDepth(2000)
+        this.debugText = this.add.text(10, game.config.height - 50, `Mode: Idle`, debugConfig).setScrollFactor(1,1).setDepth(2000)
+
+        // UI
+        this.uiTime = this.add.sprite(64, 64, 'uiTime', 12)
+        this.uiScan = this.add.sprite(game.config.width - 64, 64, 'uiScan')
+        this.uiScan.play('scanning')
+        this.mapZoom = 0.05
 
         // setup
         this.givenHp = 100
@@ -48,8 +68,9 @@ class Facility extends Phaser.Scene {
 
         // create past self
         this.shadow = new Shadow(this, game.config.width/2, game.config.height/2 + game.config.height/4, 'shadow', 0, 'right', this.hp, 'nothing')
-        // create enemy
-        this.enemyEye = new EnemyEye(this, spawn.x, spawn.y -1000, 'enemy', 0, 'right', this.player, this.shadow).setDepth(-10)
+        // create enemy & icon
+        this.enemyEye = new EnemyEye(this, spawn.x, spawn.y -1000, 'enemy', 0, 'right', this.player, this.shadow).setDepth(-100)
+        this.enemyIcon = this.add.sprite(this.enemyEye.x, this.enemyEye.y, 'enemyIcon').setScale(1.0 / this.mapZoom)
 
         // camera code
         //this.cameras.main.setPostPipeline(Phaser.Renderer.PostFX.ChromaticAberration)
@@ -59,21 +80,36 @@ class Facility extends Phaser.Scene {
         this.zoomRateInc = 0.01
         this.zoomRateDec = 0.001
 
-        // Player camera (anything that doesn't stretch)
+        // circular mask for camera
+        const graphics = this.make.graphics()
+        graphics.setPosition(this.game.config.width - 126, 2)
+        graphics.fillCircle(62, 62, 62)// size of actual map is 124
+        const circleMask = graphics.createGeometryMask()
+
+        // Cameras and what they do (double check):
+        //      mainCameras: Contains the abstract world
+        //      playerCam: For the player sprite only
+        //      uiCam: For the UI sprites only (excluding minimap)
+        //      miniMap: For the sprites in the minimap itself
+        //      enemyCam: For only the enemy sprite, incase stretching
         this.playerCam = this.cameras.add(0, 0, this.game.config.width, this.game.config.height)
         this.uiCam = this.cameras.add(0, 0, this.game.config.width, this.game.config.height)
+        this.miniMap = this.cameras.add(graphics.x, graphics.y, 124, 124).setZoom(this.mapZoom)
+        this.miniMap.setMask(circleMask)
         this.enemyCam = this.cameras.add(0, 0, this.game.config.width, this.game.config.height)
 
         // lists of objects and what they ignore
-        const mainIgnoreList = [this.player, this.terrainLayer, this.enemyEye, this.debugText]
-        const playerIgnoreList = [this.shadow, this.abstractLayer, this.enemyEye, this.debugText]
-        const uiIgnoreList = [this.terrainLayer, this.abstractLayer, this.player, this.shadow, this.enemyEye]
-        const enemyIgnoreList = [this.terrainLayer, this.abstractLayer, this.player, this.shadow]  
+        const mainIgnoreList = [this.player, this.terrainLayer, this.enemyEye, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]
+        const playerIgnoreList = [this.shadow, this.abstractLayer, this.enemyEye, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]
+        const uiIgnoreList = [this.terrainLayer, this.abstractLayer, this.player, this.shadow, this.enemyEye, this.enemyIcon]
+        const miniMapIgnoreList = [this.player, this.shadow, this.terrainLayer, this.abstractLayer, this.enemyEye, this.debugText, this.uiTime, this.uiScan]
+        const enemyIgnoreList = [this.terrainLayer, this.abstractLayer, this.player, this.shadow, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]  
         this.cameraTrackList = [this.cameras.main, this.playerCam, this.enemyCam]
         this.cameras.main.ignore(mainIgnoreList)
         this.playerCam.ignore(playerIgnoreList)
         this.enemyCam.ignore(enemyIgnoreList)
         this.uiCam.ignore(uiIgnoreList)
+        this.miniMap.ignore(miniMapIgnoreList)
         this.abstractLayer.setVisible(false)
 
 
@@ -89,6 +125,7 @@ class Facility extends Phaser.Scene {
         this.cameras.main.startFollow(this.player, true, 1, 1)
         this.playerCam.startFollow(this.player, true, 1, 1)
         this.enemyCam.startFollow(this.player, true, 1, 1)
+        this.miniMap.startFollow(this.player, true, 1, 1)
         
 
 
@@ -106,6 +143,12 @@ class Facility extends Phaser.Scene {
         this.manager = new TemporalManager(this, this.player)
 
 
+
+        // animation repeat for scanning, icon follows position of enemy eye
+        this.uiScan.on('animationupdate', (animation, frame) => {
+        this.enemyIcon.setPosition(this.enemyEye.x, this.enemyEye.y)
+        })
+
         // key controls
         keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A)
         keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D)
@@ -122,6 +165,7 @@ class Facility extends Phaser.Scene {
         this.eyeFSM.step()
 
         this.curr_delta = delta
+
     }
 
 }

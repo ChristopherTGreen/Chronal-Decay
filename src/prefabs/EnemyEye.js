@@ -8,10 +8,10 @@ class EnemyEye extends Phaser.Physics.Arcade.Sprite {
         
     
         // speed properties
-        this.accelX = 100.0
-        this.accelY = 50.0
-        this.maxSpeedX = 100
-        this.maxSpeedY = 50
+        this.accelX = 75.0
+        this.accelY = 35.0
+        this.maxSpeedX = 75
+        this.maxSpeedY = 35
         this.setMaxVelocity(this.maxSpeedX, this.maxSpeedY)
         this.slowingRadiusX = this.maxSpeedX / 1.0
         this.slowingRadiusY = this.maxSpeedY / 1.0
@@ -34,13 +34,13 @@ class EnemyEye extends Phaser.Physics.Arcade.Sprite {
         this.trackingDist = 40 // tracking distance for both x/y (optional, good if the collision process removes the setVelocity to zero, and disabling firing)
         this.trackingMOE = 10 // margin of error for tracking dist, in which it starts going back and forth within this area (sensitive due to being tied to vel)
         this.watchingProb = 0.25 // likely hood to enter watching state when locating player
-        this.guidingMargin = 100.0 // margin of error for patrolling with semi-guidance tips
-        this.freqTips = 7000.0 // frequency of tips in ms
+        this.guidingMargin = 200.0 // margin of error for patrolling with semi-guidance tips
+        this.freqTips = 15000.0 // frequency of tips in ms
 
         // behavioral distance properties
         this.overshootDist = 75.0 // overshoot distance, until waiting for new information
         this.detectionDist = 25.0 // detection distance to move to chase
-        this.loseDist = 100.0 // detection distance to lose track
+        this.loseDist = 200.0 // detection distance to lose track
 
         // timer
         this.timer = 0
@@ -128,7 +128,7 @@ class PatrolState extends State {
 class WatchState extends State {
     // executes upon entering
     enter(scene, enemy, target) {
-        enemy.timer = Phaser.Math.Between(0, enemy.timer)
+        enemy.timer = Phaser.Math.Between(enemy.timer/2.0, enemy.timer)
         
         console.log('watch')
     }
