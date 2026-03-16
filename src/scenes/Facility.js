@@ -20,6 +20,9 @@ class Facility extends Phaser.Scene {
             repeatDelay: this.scanTime, // ms
         })
 
+        
+        
+
 
         console.log('finished facility')
     }
@@ -28,12 +31,43 @@ class Facility extends Phaser.Scene {
         // variables
         this.curr_delta = 0
 
+        this.swirlPlugin = this.plugins.get('rexSwirlPipeline')
         // creates initial map
         this.map = this.add.tilemap('facilityTilemapJSON')
         const tileset_ground = this.map.addTilesetImage('tilesheet_ground01', 'facilityTilesetImage')
         const tileset_abstract = this.map.addTilesetImage('tilesheet_abstract01', 'abstractTilesetImage')
-        this.terrainLayer = this.map.createLayer('PhysicalGround', tileset_ground, 0, 0)
-        this.abstractLayer = this.map.createLayer('AbstractGround', tileset_abstract, 0, 0)
+        this.terrainLayer = this.map.createLayer('PhysicalGround', tileset_ground, 0, 0).setDepth(10)
+        this.abstractLayer = this.map.createLayer('AbstractGround', tileset_abstract, 0, 0).setDepth(10)
+
+        const spawn = this.map.findObject("Objects", obj => obj.name === "SpawnPoint")
+
+        // create facility background (traditional wrap)
+        const camOffX = 10
+        const camOffY = 10
+        this.background = this.add.tileSprite(-camOffX, -camOffY, this.game.config.width + camOffX*2, this.game.config.height + camOffY*2, 'physicalBackground').setOrigin(0, 0).setTilePosition(0, 120 - camOffY * 2).setScrollFactor(0,0)
+        this.backgroundWall = this.add.tileSprite(-camOffX, -camOffY, this.game.config.width + camOffX*2, this.game.config.height + camOffY*2, 'physicalBackgroundWall').setOrigin(0, 0).setTilePosition(0, 120 - camOffY * 2).setScrollFactor(0, 0)
+        this.backgroundCity = this.add.tileSprite(-camOffX, -camOffY, this.game.config.width + camOffX*2, this.game.config.height + camOffY*2, 'physicalBackgroundCity').setOrigin(0, 0).setTilePosition(0, 120 - camOffY * 2).setScrollFactor(0,0)
+
+        // create abstract background
+        this.abstractBackground = this.add.sprite(this.game.config.width / 2, this.game.config.height / 2, 'abstractBackground').setDepth(0).setScrollFactor(0, 0)
+        this.abstractPanels = this.add.particles(this.game.config.width / 2, this.game.config.height / 2, 'abstractPanel', {
+            speed: Phaser.Math.Between(15, 25),
+            scale: { start: 0.01, end: 1},
+            alpha: { start: 1, end: 0},
+            angle: { min: 0, max: 360},
+            frequency: 1000,
+            lifespan: 20000,
+            rotate: {
+                onUpdate: (particle) => {
+                    if (!particle.data.isOriented) {
+                        const angle = Math.atan2(particle.velocityY, particle.velocityX)
+                        particle.rotation = angle
+                    }
+                    return Phaser.Math.RadToDeg(particle.rotation) - 90
+                }
+            }
+        }).setDepth(1).setScrollFactor(0, 0)
+
 
         // debug text
         // display
@@ -50,7 +84,7 @@ class Facility extends Phaser.Scene {
             fixedWidth: 400
         }
 
-        this.debugText = this.add.text(10, game.config.height - 50, `Mode: Idle`, debugConfig).setScrollFactor(1,1).setDepth(2000)
+        this.debugText = this.add.text(10, game.config.height - 50, `Mode: Idle`, debugConfig).setScrollFactor(1,1)
 
         // UI
         this.uiTime = this.add.sprite(64, 64, 'uiTime', 12)
@@ -60,7 +94,6 @@ class Facility extends Phaser.Scene {
 
         // setup
         this.givenHp = 100
-        const spawn = this.map.findObject("Objects", obj => obj.name === "SpawnPoint")
         console.log(spawn.x)
         this.player = new Player(this, spawn.x, spawn.y, 'character', 0, 'right', this.givenHp)
         //var recorder = this.plugins.get('rexTCRP').addPlayer(this, config)
@@ -69,7 +102,7 @@ class Facility extends Phaser.Scene {
         // create past self
         this.shadow = new Shadow(this, game.config.width/2, game.config.height/2 + game.config.height/4, 'shadow', 0, 'right', this.hp, 'nothing')
         // create enemy & icon
-        this.enemyEye = new EnemyEye(this, spawn.x, spawn.y -1000, 'enemy', 0, 'right', this.player, this.shadow).setDepth(-100)
+        this.enemyEye = new EnemyEye(this, spawn.x, spawn.y -1000, 'enemy', 0, 'right', this.player, this.shadow).setDepth(3)
         this.enemyIcon = this.add.sprite(this.enemyEye.x, this.enemyEye.y, 'enemyIcon').setScale(1.0 / this.mapZoom)
 
         // camera code
@@ -98,19 +131,27 @@ class Facility extends Phaser.Scene {
         this.miniMap.setMask(circleMask)
         this.enemyCam = this.cameras.add(0, 0, this.game.config.width, this.game.config.height)
 
+        // depth control on cameras
+        Phaser.Utils.Array.SendToBack(this.cameras.cameras, this.enemyCam)
+
         // lists of objects and what they ignore
-        const mainIgnoreList = [this.player, this.terrainLayer, this.enemyEye, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]
-        const playerIgnoreList = [this.shadow, this.abstractLayer, this.enemyEye, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]
-        const uiIgnoreList = [this.terrainLayer, this.abstractLayer, this.player, this.shadow, this.enemyEye, this.enemyIcon]
-        const miniMapIgnoreList = [this.player, this.shadow, this.terrainLayer, this.abstractLayer, this.enemyEye, this.debugText, this.uiTime, this.uiScan]
-        const enemyIgnoreList = [this.terrainLayer, this.abstractLayer, this.player, this.shadow, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]  
+        const mainIgnoreList = [this.player, this.terrainLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.enemyEye, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]
+        const playerIgnoreList = [this.shadow, this.abstractLayer, this.abstractBackground, this.abstractPanels, this.enemyEye, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]
+        const uiIgnoreList = [this.terrainLayer, this.abstractLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.player, this.shadow, this.enemyEye, this.enemyIcon]
+        const miniMapIgnoreList = [this.player, this.shadow, this.terrainLayer, this.abstractLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.enemyEye, this.debugText, this.uiTime, this.uiScan]
+        const enemyIgnoreList = [this.terrainLayer, this.abstractLayer, this.background, this.backgroundWall, this.backgroundCity, this.player, this.shadow, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]  
         this.cameraTrackList = [this.cameras.main, this.playerCam, this.enemyCam]
         this.cameras.main.ignore(mainIgnoreList)
         this.playerCam.ignore(playerIgnoreList)
         this.enemyCam.ignore(enemyIgnoreList)
         this.uiCam.ignore(uiIgnoreList)
         this.miniMap.ignore(miniMapIgnoreList)
-        this.abstractLayer.setVisible(false)
+
+        this.physicalVisList = [this.terrainLayer, this.background, this.backgroundWall, this.backgroundCity]
+        this.abstractVisList = [this.abstractLayer, this.abstractBackground, this.abstractPanels]
+        this.abstractVisList.forEach((obj) => {
+            obj.setVisible(false)
+        })
 
 
         
@@ -122,11 +163,32 @@ class Facility extends Phaser.Scene {
         //this.physics.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels)
         //this.cameras.main.setZoom(0.1, 0.1)
         //this.cameras.main.setSize(this.game.config.width, this.game.config.height)
+        //his.cameras.main.setPostPipeline(SwirlPostFX);
+        //this.enemyCam.setPostPipeline(SwirlPostFX);
+        //this.playerCam.setPostPipeline(SwirlPostFX);
+        this.mainSwirl = this.swirlPlugin.add(this.cameras.main, {
+            radius: 100,
+            angle: 0
+        })
+        this.playerSwirl = this.swirlPlugin.add(this.playerCam, {
+            radius: 100,
+            angle: 0
+        })
+        this.enemySwirl = this.swirlPlugin.add(this.enemyCam, {
+            radius: 100,
+            angle: 0
+        })
+
+        
+        const offsetY = 10
         this.cameras.main.startFollow(this.player, true, 1, 1)
         this.playerCam.startFollow(this.player, true, 1, 1)
         this.enemyCam.startFollow(this.player, true, 1, 1)
         this.miniMap.startFollow(this.player, true, 1, 1)
         
+        this.cameras.main.followOffset.set(0, offsetY)
+        this.playerCam.followOffset.set(0, offsetY)
+        this.enemyCam.followOffset.set(0, offsetY)
 
 
         // set collisions
@@ -146,7 +208,7 @@ class Facility extends Phaser.Scene {
 
         // animation repeat for scanning, icon follows position of enemy eye
         this.uiScan.on('animationupdate', (animation, frame) => {
-        this.enemyIcon.setPosition(this.enemyEye.x, this.enemyEye.y)
+            this.enemyIcon.setPosition(this.enemyEye.x, this.enemyEye.y)
         })
 
         // key controls
@@ -166,6 +228,59 @@ class Facility extends Phaser.Scene {
 
         this.curr_delta = delta
 
+        this.worldTileUpdate()
+
     }
 
+    recording(timeRecordDur = 10000, timeRecordDelay = 1000, call = null) {
+        if (this.anims.exists('recording')) this.anims.remove('recording')
+        this.anims.create({
+            key: 'recording',
+            frames: this.anims.generateFrameNumbers('uiTime', {
+                frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13]
+            }).reverse(),
+            framerate: 1,
+            duration: timeRecordDur, // ms
+            repeat: 0,
+        })
+        this.uiTime.play('recording')
+    }
+
+    worldTileUpdate() {
+        if (this.cameras.main._bounds && (this.cameras.main.worldView.left > this.cameras.main._bounds.x + 0 && this.cameras.main.worldView.right < this.cameras.main._bounds.right - 0)) {
+            console.log('tiles')
+            this.background.tilePositionX += this.player.body.velocity.x / 5000
+            this.backgroundWall.tilePositionX += this.player.body.velocity.x / 3000
+            this.backgroundCity.tilePositionX += this.player.body.velocity.x / 2000
+        }
+    }
+
+    distort(str = 100, dur = 1000) {
+        this.tweens.add({
+            targets: this.mainSwirl,
+            radius: str,
+            angle: Phaser.Math.Between(0, 1) ? 360 : -360,
+            duration: dur,
+            yoyo: true,
+            ease: 'Sine.easeInOut'
+        })
+
+        this.tweens.add({
+            targets: this.playerSwirl,
+            radius: str,
+            angle: Phaser.Math.Between(0, 1) ? 360 : -360,
+            duration: dur,
+            yoyo: true,
+            ease: 'Sine.easeInOut'
+        })
+
+        this.tweens.add({
+            targets: this.enemySwirl,
+            radius: str,
+            angle: Phaser.Math.Between(0, 1) ? 360 : -360,
+            duration: dur,
+            yoyo: true,
+            ease: 'Sine.easeInOut'
+        })
+    }
 }

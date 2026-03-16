@@ -53,12 +53,11 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 class IdleState extends State {
     // enter initial call
     enter (scene, player) {
-
+        console.log('idle')
     }
 
     // executes every call/frame
     execute(scene, player) {
-        console.log('idle')
         let playerVector = new Phaser.Math.Vector2(0, 0)
         // movement transition
         if(keyLEFT.isDown || keyRIGHT.isDown) {
@@ -89,11 +88,14 @@ class IdleState extends State {
 // MoveState:
 // Player is currently moving
 class MoveState extends State {
+    enter(scene, player){
+        console.log('move')
+    }
+
     // executes every call/frame
     execute(scene, player) {
         // use destructuring to make a local copy of the keyboard object
         let playerVector = new Phaser.Math.Vector2(0, 0)
-        console.log('move')
         
         
         if(keyLEFT.isDown) {
@@ -136,9 +138,12 @@ class MoveState extends State {
 // JumpState:
 // Player is currently jumping
 class JumpState extends State {
+    enter(scene, player){
+        console.log('jump')
+    }
+
     // executes every call/frame
     execute(scene, player) {
-        console.log('jump')
         // use destructuring to make a local copy of the keyboard object
         let playerVector = new Phaser.Math.Vector2(0, 0)
 

@@ -12,6 +12,7 @@ class Preload extends Phaser.Scene {
         this.load.path = './assets/'
 
         // load assets
+        
         this.load.image('character', 'nonstatic/Player.png')
         this.load.image('shadow', 'nonstatic/Shadow.png')
         this.load.image('enemy', 'nonstatic/EnemyEye.png')
@@ -25,7 +26,11 @@ class Preload extends Phaser.Scene {
             frameHeight: 128
         })
 
-
+        this.load.image('abstractPanel', 'nonstatic/Abstract-03.png')
+        this.load.image('abstractBackground', 'static/Abstract-02.png')
+        this.load.image('physicalBackground', 'static/Background.png')
+        this.load.image('physicalBackgroundCity', 'static/BackgroundCity.png')
+        this.load.image('physicalBackgroundWall', 'static/BackgroundWall.png')
         this.load.image('facilityTilesetImage', 'static/TilesetPhysical.png')
         this.load.image('abstractTilesetImage', 'static/TilesetAbstract.png')
         this.load.tilemapTiledJSON('facilityTilemapJSON', 'static/facility.json')

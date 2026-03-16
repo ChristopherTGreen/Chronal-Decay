@@ -9,7 +9,7 @@ let config = {
     width: 854,
     height: 480,
     parent: 'Chronal Decay',
-    backgroundColor: '#d3d3d3',
+    backgroundColor: '#ffffff',
     scale: {
         zoom: 1
     },
@@ -28,13 +28,13 @@ let config = {
     audio: {
         enableWebAudio: true
     },
-    // plugins: {
-    //     global: [{
-    //         key: 'rexTCRP',
-    //         plugin: TCRPPlugin, // find source script
-    //         start: true
-    //     }]
-    // },
+    plugins: {
+        global: [{
+            key: 'rexSwirlPipeline',
+            plugin: window.rexswirlpipelineplugin,
+            start: true
+        }]
+    },
 
     scene: [ Preload, Facility, Abstract, Menu, Postcard ]
 }

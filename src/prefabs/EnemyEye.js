@@ -9,9 +9,9 @@ class EnemyEye extends Phaser.Physics.Arcade.Sprite {
     
         // speed properties
         this.accelX = 75.0
-        this.accelY = 35.0
+        this.accelY = 100
         this.maxSpeedX = 75
-        this.maxSpeedY = 35
+        this.maxSpeedY = 100
         this.setMaxVelocity(this.maxSpeedX, this.maxSpeedY)
         this.slowingRadiusX = this.maxSpeedX / 1.0
         this.slowingRadiusY = this.maxSpeedY / 1.0
@@ -108,7 +108,7 @@ class PatrolState extends State {
             this.stateMachine.transition('watch')
         }
 
-        console.log(enemy.targetGivenLoc)
+        //console.log(enemy.targetGivenLoc)
         enemy.body.setAcceleration(enemyVector.x, enemyVector.y)
 
         const playerDistance = Math.abs(Math.pow(Math.pow(target.x  - enemy.x, 2) + Math.pow(target.y - enemy.y, 2), 1/2))
@@ -213,7 +213,7 @@ class ChaseState extends State {
         enemyVector.x = (enemyVector.x - enemy.body.velocity.x) * enemy.sensitivity
         enemyVector.y = (enemyVector.y - enemy.body.velocity.y) * enemy.sensitivity
 
-        console.log(enemy.body.acceleration)
+        //console.log(enemy.body.acceleration)
 
         enemy.body.setAcceleration(enemyVector.x, enemyVector.y)
 
@@ -224,8 +224,16 @@ class ChaseState extends State {
         }
 
         
-        if (distance <= enemy.trackingMOE) {
+        if (!enemy.firing && distance <= enemy.trackingMOE) {
             // this will determine firing range?
+            enemy.firing = true
+            console.log('fire')
+            const str = 100
+            const dur = 3000
+            scene.distort(str, dur)
+            scene.time.delayedCall(dur * 4, () => {
+                enemy.firing = false
+            })
         }
 
         // detection to fire & charge weapon
