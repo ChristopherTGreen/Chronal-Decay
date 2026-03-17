@@ -1,0 +1,27 @@
+body {
+	overflow-y: hidden;
+}
+
+canvas {
+	border: 5px solid #000000;
+	position: relative;
+	transition: transform 0.5s ease;
+	
+}
+
+/* an animation class */
+.moving-card {
+    animation-name: move;
+    animation-duration: 7.5s;
+    animation-delay: 0s;
+    animation-iteration-count: 1;
+}
+
+/* define keyframes for animation */
+@keyframes move {
+	0% 	{ left: 0px; top: 0px; transform: rotate3d(0, 0, 0, 0deg); }
+	25%	{ left: 0px; top: 0px; transform: rotate3d(0, 0.1, 0.25, 90deg); }
+	50%	{ left: 0px; top: 0px; transform: rotate3d(0, 0.25, 0.5, 180deg); }
+	75%	{ left: 0px; top: 0px; transform: rotate3d(0.25, 0.5, 0.35, 180deg); }
+	100%{ left: 0px; top: 0px; transform: rotate3d(0, 0, 1, 0deg); }
+}

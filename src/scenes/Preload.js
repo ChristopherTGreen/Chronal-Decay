@@ -12,6 +12,10 @@ class Preload extends Phaser.Scene {
         this.load.path = './assets/'
 
         // load assets
+        this.load.spritesheet('button', 'static/Button-Sheet.png', {
+            frameWidth: 192,
+            frameHeight: 48
+        })
         
         this.load.image('character', 'nonstatic/Player.png')
         this.load.spritesheet('shadow', 'nonstatic/Shadow.png', {
@@ -33,6 +37,8 @@ class Preload extends Phaser.Scene {
             frameHeight: 128
         })
 
+        this.load.image('card', 'static/Card.png')
+
         this.load.image('abstractPanel', 'nonstatic/Abstract-03.png')
         this.load.image('abstractBackground', 'static/Abstract-02.png')
         this.load.image('physicalBackground', 'static/Background.png')
@@ -40,6 +46,7 @@ class Preload extends Phaser.Scene {
         this.load.image('physicalBackgroundWall', 'static/BackgroundWall.png')
         this.load.image('facilityTilesetImage', 'static/TilesetPhysical.png')
         this.load.image('abstractTilesetImage', 'static/TilesetAbstract.png')
+        this.load.image('doorMessage', 'static/DoorMessage.png')
         this.load.tilemapTiledJSON('facilityTilemapJSON', 'static/facility.json')
         
         // load fonts
@@ -48,16 +55,21 @@ class Preload extends Phaser.Scene {
 
         // load audio
         this.load.path = './assets/audio/'
+        this.load.audio('click-sound', 'sfx/click.wav')
         this.load.audio('jump-sound', 'sfx/jump.wav')
         this.load.audio('death-sound', 'sfx/death2.wav')
         this.load.audio('hit-sound', 'sfx/hit.wav')
         this.load.audio('wave-sound', 'sfx/wave.wav')
         this.load.audio('charge-sound', 'sfx/charge.wav')
+
+        // load music
+        this.load.path = './assets/audio/'
+        this.load.audio('music', 'music/Chronal Decay.mp3')
         
         console.log('finished preload')
-    }
+    }   
 
     create() {
-        this.scene.start('facilityScene')
+        this.scene.start('menuScene')
     }
 }

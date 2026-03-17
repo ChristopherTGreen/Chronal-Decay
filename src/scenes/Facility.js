@@ -53,8 +53,10 @@ class Facility extends Phaser.Scene {
         this.map = this.add.tilemap('facilityTilemapJSON')
         const tileset_ground = this.map.addTilesetImage('tilesheet_ground01', 'facilityTilesetImage')
         const tileset_abstract = this.map.addTilesetImage('tilesheet_abstract01', 'abstractTilesetImage')
+        const tileset_decor = this.map.addTilesetImage('tilesheet_door', 'doorMessage')
         this.terrainLayer = this.map.createLayer('PhysicalGround', tileset_ground, 0, 0).setDepth(10)
-        this.abstractLayer = this.map.createLayer('AbstractGround', tileset_abstract, 0, 0).setDepth(10)
+        this.abstractLayer = this.map.createLayer('AbstractGround', tileset_abstract, 0, -8).setDepth(10)
+        this.decorLayer = this.map.createLayer('Scenary', tileset_decor, 0, -32).setDepth(3)
 
         const spawn = this.map.findObject("Objects", obj => obj.name === "SpawnPoint")
 
@@ -112,8 +114,7 @@ class Facility extends Phaser.Scene {
 
         // setup
         this.givenHp = 100
-        console.log(spawn.x)
-        this.player = new Player(this, spawn.x, spawn.y, 'character', 0, 'right', this.givenHp)
+        this.player = new Player(this, spawn.x, spawn.y, 'character', 0, 'right', this.givenHp).setDepth(10)
         //var recorder = this.plugins.get('rexTCRP').addPlayer(this, config)
         this.curr_comm = 'NONE'
 
@@ -165,6 +166,20 @@ class Facility extends Phaser.Scene {
 
         this.enemyProj.stop()
 
+        // ending level
+        const end = this.map.findObject("Objects", obj => obj.name === "EndPoint")
+        
+        const doorTrigger = this.add.zone(end.x, end.y - 16).setSize(16, 64)
+        this.physics.world.enable(doorTrigger)
+
+        this.physics.add.overlap(this.player, doorTrigger, () => {
+            this.game.canvas.classList.add('moving-card')
+            
+            this.time.delayedCall(4375, () => {
+                this.scene.start('postcardScene')
+            })
+        }, null, this)
+
 
         // camera code
         //this.cameras.main.setPostPipeline(Phaser.Renderer.PostFX.ChromaticAberration)
@@ -196,11 +211,11 @@ class Facility extends Phaser.Scene {
         Phaser.Utils.Array.SendToBack(this.cameras.cameras, this.enemyCam)
 
         // lists of objects and what they ignore
-        const mainIgnoreList = [this.player, this.terrainLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.enemyEye, this.enemyProj, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]
+        const mainIgnoreList = [this.player, this.terrainLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.decorLayer, this.enemyEye, this.enemyProj, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]
         const playerIgnoreList = [this.shadow, this.abstractLayer, this.abstractBackground, this.abstractPanels, this.enemyEye, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]
-        const uiIgnoreList = [this.terrainLayer, this.abstractLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.player, this.shadow, this.enemyEye, this.enemyProj, this.enemyIcon]
-        const miniMapIgnoreList = [this.player, this.shadow, this.terrainLayer, this.abstractLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.enemyEye, this.enemyProj, this.debugText, this.uiTime, this.uiScan]
-        const enemyIgnoreList = [this.terrainLayer, this.abstractLayer, this.background, this.backgroundWall, this.backgroundCity, this.player, this.shadow, this.enemyProj, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]  
+        const uiIgnoreList = [this.terrainLayer, this.abstractLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.decorLayer, this.player, this.shadow, this.enemyEye, this.enemyProj, this.enemyIcon]
+        const miniMapIgnoreList = [this.player, this.shadow, this.terrainLayer, this.abstractLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.decorLayer, this.enemyEye, this.enemyProj, this.debugText, this.uiTime, this.uiScan]
+        const enemyIgnoreList = [this.terrainLayer, this.abstractLayer, this.background, this.backgroundWall, this.backgroundCity, this.decorLayer, this.player, this.shadow, this.enemyProj, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]  
         this.cameraTrackList = [this.cameras.main, this.playerCam, this.enemyCam]
         this.cameras.main.ignore(mainIgnoreList)
         this.playerCam.ignore(playerIgnoreList)
@@ -221,12 +236,7 @@ class Facility extends Phaser.Scene {
         this.uiCam.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels)
         this.playerCam.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels)
         this.enemyCam.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels)
-        //this.physics.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels)
-        //this.cameras.main.setZoom(0.1, 0.1)
-        //this.cameras.main.setSize(this.game.config.width, this.game.config.height)
-        //his.cameras.main.setPostPipeline(SwirlPostFX);
-        //this.enemyCam.setPostPipeline(SwirlPostFX);
-        //this.playerCam.setPostPipeline(SwirlPostFX);
+
         this.mainSwirl = this.swirlPlugin.add(this.cameras.main, {
             radius: 100,
             angle: 0
@@ -264,6 +274,13 @@ class Facility extends Phaser.Scene {
 
         // initialize time manager
         this.manager = new TemporalManager(this, this.player)
+
+        // music
+        const music = this.sound.add('music', {
+            volume: game.settings.music * 0.9,
+            loop: true
+        })
+        music.play()
 
 
 
