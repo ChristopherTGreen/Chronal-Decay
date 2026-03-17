@@ -9,7 +9,7 @@ class Facility extends Phaser.Scene {
         // animation UI
         this.scanTime = 1000 // scantime, affects time to scan and get new information
         this.scanDuration = 600 // scanduration, period of knowledge
-        this.anims.create({
+        if (!this.anims.exists('scanning')) this.anims.create({
             key: 'scanning',
             frames: this.anims.generateFrameNumbers('uiScan', {
                 frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 0]
@@ -21,14 +21,14 @@ class Facility extends Phaser.Scene {
         })
 
         // animations
-        this.anims.create({
+        if (!this.anims.exists('burn')) this.anims.create({
             key: 'burn',
             frameRate: 12,
             frames: this.anims.generateFrameNumbers('enemyProj'),
             repeat: -1,
             yoyo: false
         })
-        this.anims.create({
+        if (!this.anims.exists('shadowIndic')) this.anims.create({
             key: 'shadowIndic',
             frames: this.anims.generateFrameNumbers('shadow'),
             framerate: 1,
@@ -46,7 +46,8 @@ class Facility extends Phaser.Scene {
     create() {
         // variables
         this.curr_delta = 0
-        this.univDamage = 1
+        this.univDamage = 100
+        this.worldState = 'IDLE'
 
         this.swirlPlugin = this.plugins.get('rexSwirlPipeline')
         // creates initial map
@@ -131,16 +132,17 @@ class Facility extends Phaser.Scene {
 
                 let playerHit = this.player.body.hitTest(x,y)
                 let shadowHit = this.shadow.body.hitTest(x,y)
-                if (playerHit) {
+                if (shadowHit && this.worldState == 'REPLAY') {
+                    this.damageHit(this.shadow, 500, 100)
+                }
+                if (shadowHit || playerHit) {
                     this.damageHit(this.player, 500, 100)
                     this.player.hp -= this.univDamage
 
-                    return true
-                }
-                if (shadowHit) {
-                    this.damageHit(this.shadow, 500, 100)
-                    this.damageHit(this.player, 500, 100)
-                    this.player.hp -= this.univDamage
+                    let frameIndex = Math.floor((100 - this.player.hp) / 10)
+                    frameIndex = Phaser.Math.Clamp(frameIndex, 0, 9)
+                    this.player.setFrame(frameIndex)
+                    console.log(frameIndex)
 
                     return true
                 }
@@ -153,7 +155,7 @@ class Facility extends Phaser.Scene {
             scale: 1.0,
             alpha: { start: 0.75, end: 0.2},
             frequency: 200,
-            lifespan: 3000,
+            lifespan: 1000,
             deathZone: {
                 type: 'onEnter',
                 source: projCall

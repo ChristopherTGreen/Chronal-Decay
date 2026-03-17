@@ -197,6 +197,13 @@ class JumpState extends State {
 // Player is killed from age, and restarts game
 class DeathPState extends State {
     enter(scene, player) {
-        scene.scene.restart()
+        const str = 2000
+        const dur = 1000
+
+        scene.distort(str, dur)
+        scene.time.delayedCall(dur, () => {
+            scene.sound.stopAll()
+            scene.scene.restart()
+        })
     }
 }

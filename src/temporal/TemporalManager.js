@@ -5,13 +5,13 @@ class TemporalManager {
         this.history = [] // history of past commands (maybe find way to save memory)
         // could make this a fixed array
         this.index = 0
-        this.mode = 'IDLE' // Idle, Recording, Static, Replay
+        this.mode = 'IDLE' // Idle, Record, Static, Replay
         this.timer = 0
         this.timeMin = 1000 // min time in static, will be checking which frame current anim is in, mostlikely for 1
         this.timeMax = 10000 // max time in static, will be checking which frame current anim is in, most likely for 13
         this.currMaxIndex = 0
 
-        this.staticDist = 50 // distance required to replay
+        this.staticDist = 100000000000 // distance required to replay
 
         // variables for camera
         this.worldDelta = 0.0
@@ -70,6 +70,7 @@ class TemporalManager {
     // sets new mode, may not be required anymore due to state machine
     setMode(newMode) {
         this.mode = newMode
+        this.scene.worldState = this.mode
         if (newMode === 'STATIC') {
             // reset index to the end of the recording
             this.index = this.history.length - 1

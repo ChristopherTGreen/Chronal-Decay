@@ -133,7 +133,7 @@ class JumpShadowState extends State {
         let shadowVector = new Phaser.Math.Vector2(0, 0)
 
         // coyote jump
-        if(keySPACE.isDown && shadow.coyote) {
+        if(shadow.command == 'JUMP' && shadow.coyote) {
             shadow.body.setVelocityY(shadow.accelY)
             shadow.coyote = false
             

@@ -17,7 +17,10 @@ class Preload extends Phaser.Scene {
             frameHeight: 48
         })
         
-        this.load.image('character', 'nonstatic/Player.png')
+        this.load.spritesheet('character', 'nonstatic/Player.png', {
+            frameWidth: 32,
+            frameHeight: 64
+        })
         this.load.spritesheet('shadow', 'nonstatic/Shadow.png', {
             frameWidth: 32,
             frameHeight: 64
