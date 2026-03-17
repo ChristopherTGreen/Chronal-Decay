@@ -20,6 +20,22 @@ class Facility extends Phaser.Scene {
             repeatDelay: this.scanTime, // ms
         })
 
+        // animations
+        this.anims.create({
+            key: 'burn',
+            frameRate: 12,
+            frames: this.anims.generateFrameNumbers('enemyProj'),
+            repeat: -1,
+            yoyo: false
+        })
+        this.anims.create({
+            key: 'shadowIndic',
+            frames: this.anims.generateFrameNumbers('shadow'),
+            framerate: 1,
+            duration: 1000,
+            repeat: -1,
+        })
+
         
         
 
@@ -30,6 +46,7 @@ class Facility extends Phaser.Scene {
     create() {
         // variables
         this.curr_delta = 0
+        this.univDamage = 1
 
         this.swirlPlugin = this.plugins.get('rexSwirlPipeline')
         // creates initial map
@@ -67,15 +84,16 @@ class Facility extends Phaser.Scene {
                 }
             }
         }).setDepth(1).setScrollFactor(0, 0)
+        
 
 
         // debug text
         // display
         let debugConfig = {
-            fontFamily: 'arial',
+            fontFamily: 'chronal',
             fontSize: '30px',
             backgroundColor: '#a4b9c700',
-            color: '#49fff5',
+            color: '#8ab4f8',
             align: 'left',
             padding: {
                 top: 5,
@@ -101,9 +119,52 @@ class Facility extends Phaser.Scene {
 
         // create past self
         this.shadow = new Shadow(this, game.config.width/2, game.config.height/2 + game.config.height/4, 'shadow', 0, 'right', this.hp, 'nothing')
+        this.shadow.anims.play('shadowIndic')
         // create enemy & icon
         this.enemyEye = new EnemyEye(this, spawn.x, spawn.y -1000, 'enemy', 0, 'right', this.player, this.shadow).setDepth(3)
         this.enemyIcon = this.add.sprite(this.enemyEye.x, this.enemyEye.y, 'enemyIcon').setScale(1.0 / this.mapZoom)
+        // collision setup for particles and player/shadow
+        let projCall = {
+            contains: (x, y) => {
+                if (this.player.recentHit) return
+
+                let playerHit = this.player.body.hitTest(x,y)
+                let shadowHit = this.shadow.body.hitTest(x,y)
+                if (playerHit) {
+                    this.damageHit(this.player, 500, 100)
+                    this.player.hp -= this.univDamage
+
+                    return true
+                }
+                if (shadowHit) {
+                    this.damageHit(this.shadow, 500, 100)
+                    this.damageHit(this.player, 500, 100)
+                    this.player.hp -= this.univDamage
+
+                    return true
+                }
+                return false
+            }
+        }
+        
+        this.enemyProj = this.add.particles(0, 0, 'enemyProj', {
+            speed: Phaser.Math.Between(15, 25),
+            scale: 1.0,
+            alpha: { start: 0.75, end: 0.2},
+            frequency: 200,
+            lifespan: 3000,
+            deathZone: {
+                type: 'onEnter',
+                source: projCall
+            },
+            anim: {
+                anims: 'burn'
+            }
+        }).setDepth(10)
+        this.enemyProj.startFollow(this.enemyEye, 0, 0, false)
+
+        this.enemyProj.stop()
+
 
         // camera code
         //this.cameras.main.setPostPipeline(Phaser.Renderer.PostFX.ChromaticAberration)
@@ -135,11 +196,11 @@ class Facility extends Phaser.Scene {
         Phaser.Utils.Array.SendToBack(this.cameras.cameras, this.enemyCam)
 
         // lists of objects and what they ignore
-        const mainIgnoreList = [this.player, this.terrainLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.enemyEye, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]
+        const mainIgnoreList = [this.player, this.terrainLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.enemyEye, this.enemyProj, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]
         const playerIgnoreList = [this.shadow, this.abstractLayer, this.abstractBackground, this.abstractPanels, this.enemyEye, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]
-        const uiIgnoreList = [this.terrainLayer, this.abstractLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.player, this.shadow, this.enemyEye, this.enemyIcon]
-        const miniMapIgnoreList = [this.player, this.shadow, this.terrainLayer, this.abstractLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.enemyEye, this.debugText, this.uiTime, this.uiScan]
-        const enemyIgnoreList = [this.terrainLayer, this.abstractLayer, this.background, this.backgroundWall, this.backgroundCity, this.player, this.shadow, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]  
+        const uiIgnoreList = [this.terrainLayer, this.abstractLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.player, this.shadow, this.enemyEye, this.enemyProj, this.enemyIcon]
+        const miniMapIgnoreList = [this.player, this.shadow, this.terrainLayer, this.abstractLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.enemyEye, this.enemyProj, this.debugText, this.uiTime, this.uiScan]
+        const enemyIgnoreList = [this.terrainLayer, this.abstractLayer, this.background, this.backgroundWall, this.backgroundCity, this.player, this.shadow, this.enemyProj, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]  
         this.cameraTrackList = [this.cameras.main, this.playerCam, this.enemyCam]
         this.cameras.main.ignore(mainIgnoreList)
         this.playerCam.ignore(playerIgnoreList)
@@ -229,9 +290,35 @@ class Facility extends Phaser.Scene {
         this.curr_delta = delta
 
         this.worldTileUpdate()
+        this.distortUpdate()
 
     }
 
+    // updates the background to follow movement of the camera (maybe move to track camera velocity, not player)
+    worldTileUpdate() {
+        if (this.cameras.main._bounds && (this.cameras.main.worldView.left > this.cameras.main._bounds.x + 0 && this.cameras.main.worldView.right < this.cameras.main._bounds.right - 0)) {
+            console.log('tiles')
+            this.background.tilePositionX += this.player.body.velocity.x / 5000
+            this.backgroundWall.tilePositionX += this.player.body.velocity.x / 3000
+            this.backgroundCity.tilePositionX += this.player.body.velocity.x / 2000
+        }
+    }
+
+    distortUpdate() {
+        if (this.mainSwirl && this.playerSwirl && this.enemySwirl) {
+            const cam = this.cameras.main
+            const screenX = this.enemyEye.x - cam.scrollX
+            const screenY = this.enemyEye.y - cam.scrollY
+
+            this.mainSwirl.setCenter(screenX, screenY)
+            this.playerSwirl.setCenter(screenX, screenY)
+            this.enemySwirl.setCenter(screenX, screenY)
+        }
+    }
+
+
+
+    // plays the recording animation for the uiTime
     recording(timeRecordDur = 10000, timeRecordDelay = 1000, call = null) {
         if (this.anims.exists('recording')) this.anims.remove('recording')
         this.anims.create({
@@ -245,16 +332,22 @@ class Facility extends Phaser.Scene {
         })
         this.uiTime.play('recording')
     }
-
-    worldTileUpdate() {
-        if (this.cameras.main._bounds && (this.cameras.main.worldView.left > this.cameras.main._bounds.x + 0 && this.cameras.main.worldView.right < this.cameras.main._bounds.right - 0)) {
-            console.log('tiles')
-            this.background.tilePositionX += this.player.body.velocity.x / 5000
-            this.backgroundWall.tilePositionX += this.player.body.velocity.x / 3000
-            this.backgroundCity.tilePositionX += this.player.body.velocity.x / 2000
-        }
+    // plays the restoring animation for the uiTime
+    restoring(timeRestoreDur = 10000, timeRecordDelay = 1000, call = null) {
+        if (this.anims.exists('restoring')) this.anims.remove('restoring')
+        this.anims.create({
+            key: 'restoring',
+            frames: this.anims.generateFrameNumbers('uiTime', {
+                frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+            }),
+            framerate: 1,
+            duration: timeRestoreDur, // ms
+            repeat: 0,
+        })
+        this.uiTime.play('restoring')
     }
 
+    // distorts the world in 3 different cameras
     distort(str = 100, dur = 1000) {
         this.tweens.add({
             targets: this.mainSwirl,
@@ -281,6 +374,47 @@ class Facility extends Phaser.Scene {
             duration: dur,
             yoyo: true,
             ease: 'Sine.easeInOut'
+        })
+    }
+
+
+    // tweens for damage and after-damage hits
+    // flashing red hit for damage (optional, dependings no webgl or canvas)
+    damageHit(source, redTime, time){
+        this.cameraTrackList.forEach((cam) => {
+            cam.shake(200, 0.003)
+        })
+        source.recentHit = true
+        this.sound.play('hit-sound', {
+            volume: game.settings.volume * 1.1
+        })
+        this.tweens.add({
+            targets: source,
+            tint: 0xff0000,
+            alpha: 1.0,
+            duration: redTime,
+            yoyo: false,
+            repeat: 0,
+            onComplete: () => {
+                source.alpha = 1
+                source.clearTint()
+                this.safeTimeHit(source, time)
+            }
+        })
+    }
+
+    // flashing alpha for safe-time after being hit
+    safeTimeHit(source, time){
+        this.tweens.add({
+            targets: source,
+            alpha: 0.25,
+            duration: time,
+            yoyo: true,
+            repeat: 10,
+            onComplete: () => {
+                source.alpha = 1
+                source.recentHit = false
+            }  
         })
     }
 }

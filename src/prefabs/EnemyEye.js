@@ -9,9 +9,9 @@ class EnemyEye extends Phaser.Physics.Arcade.Sprite {
     
         // speed properties
         this.accelX = 75.0
-        this.accelY = 100
+        this.accelY = 35.0
         this.maxSpeedX = 75
-        this.maxSpeedY = 100
+        this.maxSpeedY = 35
         this.setMaxVelocity(this.maxSpeedX, this.maxSpeedY)
         this.slowingRadiusX = this.maxSpeedX / 1.0
         this.slowingRadiusY = this.maxSpeedY / 1.0
@@ -19,7 +19,7 @@ class EnemyEye extends Phaser.Physics.Arcade.Sprite {
         // properties
         this.direction = direction
         this.firing = false
-        this.firingRange = 200
+        this.firingRange = 30
         this.firingLimitR = 50
         this.hp = 100.0
         this.target = target
@@ -34,13 +34,13 @@ class EnemyEye extends Phaser.Physics.Arcade.Sprite {
         this.trackingDist = 40 // tracking distance for both x/y (optional, good if the collision process removes the setVelocity to zero, and disabling firing)
         this.trackingMOE = 10 // margin of error for tracking dist, in which it starts going back and forth within this area (sensitive due to being tied to vel)
         this.watchingProb = 0.25 // likely hood to enter watching state when locating player
-        this.guidingMargin = 200.0 // margin of error for patrolling with semi-guidance tips
+        this.guidingMargin = 250.0 // margin of error for patrolling with semi-guidance tips
         this.freqTips = 15000.0 // frequency of tips in ms
 
         // behavioral distance properties
-        this.overshootDist = 75.0 // overshoot distance, until waiting for new information
+        this.overshootDist = 100.0 // overshoot distance, until waiting for new information
         this.detectionDist = 25.0 // detection distance to move to chase
-        this.loseDist = 200.0 // detection distance to lose track
+        this.loseDist = 100.0 // detection distance to lose track
 
         // timer
         this.timer = 0
@@ -60,6 +60,10 @@ class EnemyEye extends Phaser.Physics.Arcade.Sprite {
             charge: new ChargeState(),
             fire: new FireState()
         }, [scene, this, this.target]) // scene context
+    }
+
+    chargeAttack(dur) {
+
     }
 }
 
@@ -178,6 +182,88 @@ class ChaseState extends State {
     // executes every call/frame
     execute(scene, enemy, target) {
         // closest target
+        if (scene.manager.mode == 'REPLAY' && enemy.shadTarget.visible) {
+            enemy.targetGivenLoc.x = enemy.shadTarget.x
+            enemy.targetGivenLoc.y = enemy.shadTarget.y
+        }
+        else {
+            enemy.targetGivenLoc.x = target.x
+            enemy.targetGivenLoc.y = target.y
+        }
+
+
+        let enemyVector = new Phaser.Math.Vector2(0, 0)
+
+        // detection
+        const directionX = (enemy.targetGivenLoc.x > enemy.x) ? 1 : -1
+        const directionY = (enemy.targetGivenLoc.y > enemy.y) ? 1 : -1
+
+        const distance = Math.abs(Math.pow(Math.pow(enemy.targetGivenLoc.x  - enemy.x, 2) + Math.pow(enemy.targetGivenLoc.y - enemy.y, 2), 1/2))
+        const distanceX = Math.abs(enemy.targetGivenLoc.x - enemy.x)
+        const distanceY = Math.abs(enemy.targetGivenLoc.y - enemy.y)
+
+
+
+        // slowdown calculation to prevent overshooting, and movement
+        if (distanceX < enemy.slowingRadiusX) {
+            enemyVector.x = directionX * (enemy.accelX * (distanceX / enemy.slowingRadiusX))
+        }
+        else if (distanceX > enemy.trackingMOE) enemyVector.x = directionX * enemy.accelX
+        if (distanceY < enemy.slowingRadiusY) {
+            enemyVector.y = directionY * (enemy.accelY * (distanceY / enemy.slowingRadiusY))
+        }
+        else if (distanceY > enemy.trackingMOE) enemyVector.y = directionY * enemy.accelY
+
+        enemyVector.x = (enemyVector.x - enemy.body.velocity.x) * enemy.sensitivity
+        enemyVector.y = (enemyVector.y - enemy.body.velocity.y) * enemy.sensitivity
+
+        enemy.body.setAcceleration(enemyVector.x, enemyVector.y)
+
+        if ((scene.manager.mode == 'IDLE' || scene.manager.mode == 'RECORDING') && distance > enemy.loseDist) {
+            enemy.found = false
+            console.log('lost target, continuing patrol')
+            this.stateMachine.transition('patrol')
+        }
+
+        
+        if (!enemy.firing && distance <= enemy.firingRange) {
+            // this will determine firing range?
+            enemy.firing = true
+            this.stateMachine.transition('charge')
+        }
+    }
+}
+
+// ChargeState
+// Charges it's main weapon, in this time period, it has limited movement speed and direction
+class ChargeState extends State {
+    // executes upon entering
+    enter(scene, enemy, target) {
+        const str = 100
+        const dur = 3000
+        scene.distort(str, dur)
+        scene.time.delayedCall(dur * 2, () => {
+            enemy.firing = false
+        })
+
+        scene.time.delayedCall(dur, () => {
+            scene.sound.play('wave-sound', {
+                volume: game.settings.volume * 1.1,
+                rate: 2500.0/dur // 5 sec / target (#) sec
+            })
+            this.stateMachine.transition('fire')
+        })
+
+        scene.sound.play('charge-sound', {
+            volume: game.settings.volume * 1.1,
+            rate: 5000.0/dur // 5 sec / target (#) sec
+        })
+        
+        console.log('chase')
+    }
+
+    // executes every call/frame
+    execute(scene, enemy, target) {
         if (scene.manager.mode == 'REPLAY' && Phaser.Math.Distance.Between(enemy.x, enemy.y, enemy.shadTarget.x, enemy.shadTarget.y) * enemy.shadRatio > Phaser.Math.Distance.Between(enemy.x, enemy.y, target.x, target.y)) {
             enemy.targetGivenLoc.x = enemy.shadTarget.x
             enemy.targetGivenLoc.y = enemy.shadTarget.y
@@ -213,48 +299,30 @@ class ChaseState extends State {
         enemyVector.x = (enemyVector.x - enemy.body.velocity.x) * enemy.sensitivity
         enemyVector.y = (enemyVector.y - enemy.body.velocity.y) * enemy.sensitivity
 
-        //console.log(enemy.body.acceleration)
-
-        enemy.body.setAcceleration(enemyVector.x, enemyVector.y)
-
-        if ((scene.manager.mode == 'IDLE' || scene.manager.mode == 'RECORDING') && distance > enemy.loseDist) {
-            enemy.found = false
-            console.log('lost target, continuing patrol')
-            this.stateMachine.transition('patrol')
-        }
-
-        
-        if (!enemy.firing && distance <= enemy.trackingMOE) {
-            // this will determine firing range?
-            enemy.firing = true
-            console.log('fire')
-            const str = 100
-            const dur = 3000
-            scene.distort(str, dur)
-            scene.time.delayedCall(dur * 4, () => {
-                enemy.firing = false
-            })
-        }
-
-        // detection to fire & charge weapon
-        // if (distance < enemy.firingRange && distance > enemy.firingLimitR && !enemy.firing) {
-        //     enemy.firing = true
-        //     // wait 500ms to fire (if still alive)
-        //     scene.time.delayedCall(1200, () => {
-        //         if (enemy && enemy.active) this.stateMachine.transition('fire')
-        //     })
-        // }
+        enemy.body.setAcceleration(enemyVector.x / 2.0, enemyVector.y / 2.0)
     }
-}
-
-// ChargeState
-// Charges it's main weapon, in this time period, it has limited movement speed and direction
-class ChargeState extends State {
-    // WIP
 }
 
 // FireState
 // Fires it's main weapon, tracking the enemy while firing for a duration of time at even more limited speed
 class FireState extends State {
-    // wip
+    // executes upon entering
+    enter(scene, enemy, target) {
+        scene.enemyProj.start()
+        
+        console.log('fire')
+    }
+
+    // executes every call/frame
+    execute(scene, enemy, target) {
+        let enemyVector = new Phaser.Math.Vector2(0, 0)
+
+        enemy.body.setAcceleration(enemyVector.x, enemyVector.y)
+
+        if (enemy.firing == false) {
+            scene.enemyProj.stop()
+            console.log('stopping anim')
+            this.stateMachine.transition('chase')
+        }
+    }
 }

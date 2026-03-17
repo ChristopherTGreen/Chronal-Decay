@@ -17,6 +17,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
         this.direction = direction
         this.hp = hp
+        this.recentHit = false
         this.initialDist = true
         this.coyoteTime = 2000
         this.coyote = true
@@ -26,7 +27,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         //const sizeRateW = 1.92 // only for offset
         //const sizeDiffY = 30
         //const sizeRateY = 1.3 // only for offset
-        this.setSize(this.width, this.height/2).setOffset(0, this.height/2)
+        this.setSize(this.width/2, this.height/3).setOffset(this.width/4, this.height/1.5)
         this.setDragX(200)
         console.log("called constructor play")
 

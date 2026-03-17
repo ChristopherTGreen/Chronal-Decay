@@ -11,7 +11,7 @@ class TemporalManager {
         this.timeMax = 10000 // max time in static, will be checking which frame current anim is in, most likely for 13
         this.currMaxIndex = 0
 
-        this.staticDist = 20 // distance required to replay
+        this.staticDist = 50 // distance required to replay
 
         // variables for camera
         this.worldDelta = 0.0
@@ -160,6 +160,7 @@ class IdleTimeState extends State {
         scene.cameras.main.setZoom(1.0, 1.0)
 
         // recharge
+        scene.restoring(manager.timeMax * ((scene.uiTime.frame.name + 1) / 13))
 
         // update text
         scene.debugText.setText(`Mode: ${manager.mode}`)

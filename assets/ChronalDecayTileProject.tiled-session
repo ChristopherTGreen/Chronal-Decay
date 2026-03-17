@@ -44,7 +44,7 @@
             "scaleInDock": 1
         }
     },
-    "last.imagePath": "C:/Users/ctgre/.vscode/vscode_folder_storage/phaser3/Chronal Decay/assets/abstract/static",
+    "last.imagePath": "C:/Users/ctgre/.vscode/vscode_folder_storage/phaser3/Chronal Decay/assets/static",
     "openFiles": [
         "physical/static/facility.tmx"
     ],
@@ -55,6 +55,10 @@
         "C:/Users/ctgre/.vscode/vscode_folder_storage/phaser3/CP-Slime-World-master/assets/overworld.tmx"
     ],
     "tileset.embedInMap": true,
+    "tileset.tileSize": {
+        "height": 64,
+        "width": 32
+    },
     "tileset.transparentColor": "#000000",
     "tileset.useTransparentColor": true
 }
