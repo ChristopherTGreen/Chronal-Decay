@@ -1,5 +1,25 @@
-// WIP
-// Working on temporal based game, involving command patterns and state machines, and cameras
+// Name: Christopher Green
+// Title: Chronal Decay
+// Time Spent: 40 hours at minimum
+// Features: 
+
+// Game AI
+// The enemy eye has several different states, along with behavioral tendencies, 
+// based on given world state, player position, and shadow position. Will always
+// chase shadow if present in replay state. 
+
+// Cameras:
+// There are 5 cameras, which track different aspects. There is a minimap top-right
+// which displays the current position of the enemy eye from afar. 
+// Another camera is the UI itself, to prevent distortions from affecting it.
+// Another camera, or several, is for the player, enemy, and the physical background.
+
+// Postcard flip:
+// The postcard flips, and right when you can't see either side, it switches scenes for a smooth transition.
+
+// Subtle Death:
+// Player ages, eventually corroding into rust and ashes.
+
 
 "use strict"
 
@@ -22,7 +42,7 @@ let config = {
             gravity: {
                 y: 0
             },
-            debug: true,
+            debug: false,
         }
     },
     audio: {

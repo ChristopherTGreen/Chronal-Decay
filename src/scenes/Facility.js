@@ -44,9 +44,15 @@ class Facility extends Phaser.Scene {
     }
 
     create() {
+        // reset flip anim
+        this.time.delayedCall(4375 / 2.0, () => {
+            this.game.canvas.classList.remove('moving-card')
+            this.game.canvas.style.transform = ''
+        })
+
         // variables
         this.curr_delta = 0
-        this.univDamage = 100
+        this.univDamage = 4
         this.worldState = 'IDLE'
 
         this.swirlPlugin = this.plugins.get('rexSwirlPipeline')
@@ -60,6 +66,7 @@ class Facility extends Phaser.Scene {
         this.decorLayer = this.map.createLayer('Scenary', tileset_decor, 0, -32).setDepth(3)
 
         const spawn = this.map.findObject("Objects", obj => obj.name === "SpawnPoint")
+        const end = this.map.findObject("Objects", obj => obj.name === "EndPoint")
 
         // create facility background (traditional wrap)
         const camOffX = 10
@@ -106,6 +113,29 @@ class Facility extends Phaser.Scene {
         }
 
         this.debugText = this.add.text(10, game.config.height - 50, `Mode: Idle`, debugConfig).setScrollFactor(1,1)
+
+        // text config
+        let textConfig = {
+            fontFamily: 'chronal',
+            fontSize: '16px',
+            backgroundColor: '#a4b9c700',
+            color: '#8ab4f8',
+            align: 'left',
+            padding: {
+                top: 24,
+                bottom: 0,
+            },
+            lineSpacing: 10,
+            wordWrap: { width: 430, useAdvancedWrap: true }
+        }
+        this.text = this.add.text(spawn.x, spawn.y - 132, 
+            `Instructions: WASD to move\nSpacebar to Jump\nIn Physical - Press Q to record\n In Abstract - Hold Q to rewind\nPress E to replay`, 
+            textConfig)
+
+        this.devText = this.add.text(end.x - 128, end.y - 80, 
+            `Quick Test Ending`, 
+            textConfig)
+
 
         // UI
         this.uiTime = this.add.sprite(64, 64, 'uiTime', 12)
@@ -169,8 +199,6 @@ class Facility extends Phaser.Scene {
         this.enemyProj.stop()
 
         // ending level
-        const end = this.map.findObject("Objects", obj => obj.name === "EndPoint")
-        
         const doorTrigger = this.add.zone(end.x, end.y - 16).setSize(16, 64)
         this.physics.world.enable(doorTrigger)
 
@@ -213,11 +241,11 @@ class Facility extends Phaser.Scene {
         Phaser.Utils.Array.SendToBack(this.cameras.cameras, this.enemyCam)
 
         // lists of objects and what they ignore
-        const mainIgnoreList = [this.player, this.terrainLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.decorLayer, this.enemyEye, this.enemyProj, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]
-        const playerIgnoreList = [this.shadow, this.abstractLayer, this.abstractBackground, this.abstractPanels, this.enemyEye, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]
-        const uiIgnoreList = [this.terrainLayer, this.abstractLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.decorLayer, this.player, this.shadow, this.enemyEye, this.enemyProj, this.enemyIcon]
-        const miniMapIgnoreList = [this.player, this.shadow, this.terrainLayer, this.abstractLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.decorLayer, this.enemyEye, this.enemyProj, this.debugText, this.uiTime, this.uiScan]
-        const enemyIgnoreList = [this.terrainLayer, this.abstractLayer, this.background, this.backgroundWall, this.backgroundCity, this.decorLayer, this.player, this.shadow, this.enemyProj, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]  
+        const mainIgnoreList = [this.text, this.player, this.terrainLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.decorLayer, this.enemyEye, this.enemyProj, this.debugText, this.devText, this.uiTime, this.uiScan, this.enemyIcon]
+        const playerIgnoreList = [ this.shadow, this.abstractLayer, this.abstractBackground, this.abstractPanels, this.enemyEye, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]
+        const uiIgnoreList = [this.text, this.terrainLayer, this.abstractLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.decorLayer, this.player, this.shadow, this.enemyEye, this.enemyProj, this.enemyIcon, this.debugText]
+        const miniMapIgnoreList = [this.text, this.player, this.shadow, this.terrainLayer, this.abstractLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.decorLayer, this.enemyEye, this.enemyProj, this.debugText, this.devText, this.uiTime, this.uiScan]
+        const enemyIgnoreList = [this.text, this.terrainLayer, this.abstractLayer, this.background, this.backgroundWall, this.backgroundCity, this.decorLayer, this.player, this.shadow, this.enemyProj, this.debugText, this.devText, this.uiTime, this.uiScan, this.enemyIcon]  
         this.cameraTrackList = [this.cameras.main, this.playerCam, this.enemyCam]
         this.cameras.main.ignore(mainIgnoreList)
         this.playerCam.ignore(playerIgnoreList)

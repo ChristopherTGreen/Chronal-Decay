@@ -10,11 +10,17 @@ class Menu extends Phaser.Scene {
     }
 
     create() {
+        // reset flip anim
+        this.time.delayedCall(4375 / 2.0, () => {
+            this.game.canvas.classList.remove('moving-card')
+            this.game.canvas.style.transform = ''
+        })
+
         const camOffX = 10
         const camOffY = 10
-        this.background = this.add.tileSprite(-camOffX, -camOffY, this.game.config.width + camOffX*2, this.game.config.height + camOffY*2, 'physicalBackground').setOrigin(0, 0).setTilePosition(40, 120 - camOffY * 2).setScrollFactor(0,0)
-        this.backgroundWall = this.add.tileSprite(-camOffX, -camOffY, this.game.config.width + camOffX*2, this.game.config.height + camOffY*2, 'physicalBackgroundWall').setOrigin(0, 0).setTilePosition(40, 120 - camOffY * 2).setScrollFactor(0, 0)
-        this.backgroundCity = this.add.tileSprite(-camOffX, -camOffY, this.game.config.width + camOffX*2, this.game.config.height + camOffY*2, 'physicalBackgroundCity').setOrigin(0, 0).setTilePosition(40, 120 - camOffY * 2).setScrollFactor(0,0)
+        this.background = this.add.tileSprite(-camOffX, -camOffY, this.game.config.width + camOffX*2, this.game.config.height + camOffY*2, 'physicalBackground').setOrigin(0, 0).setTilePosition(60, 120 - camOffY * 2).setScrollFactor(0,0)
+        this.backgroundWall = this.add.tileSprite(-camOffX, -camOffY, this.game.config.width + camOffX*2, this.game.config.height + camOffY*2, 'physicalBackgroundWall').setOrigin(0, 0).setTilePosition(60, 120 - camOffY * 2).setScrollFactor(0, 0)
+        this.backgroundCity = this.add.tileSprite(-camOffX, -camOffY, this.game.config.width + camOffX*2, this.game.config.height + camOffY*2, 'physicalBackgroundCity').setOrigin(0, 0).setTilePosition(60, 120 - camOffY * 2).setScrollFactor(0,0)
 
         // click sound
         const clickSound = this.sound.add('click-sound', {
@@ -35,6 +41,9 @@ class Menu extends Phaser.Scene {
             fixedWidth: game.config.width
         }
         this.titleText = this.add.text(0, game.config.height/4.0, `Chronal Decay`, textConfig)
+        textConfig.fontSize = 32
+        this.authorText = this.add.text(0, game.config.height/4.0 + 96, `Developed by Christopher Green`, textConfig)
+        this.authorText = this.add.text(0, game.config.height/4.0 + 132, `To my father`, textConfig)
 
         // text config
         let buttonConfig = {
@@ -49,7 +58,7 @@ class Menu extends Phaser.Scene {
             },
             fixedWidth: game.config.width
         }
-        // volume settings
+        // start buttons
         const startBg = this.add.image(0, 0, 'button', 0).setOrigin(0.5, 0.5)
         const startTitle = this.add.text(0, 2, `Start`, buttonConfig).setOrigin(0.5, 0.5)
         const startGroup = this.add.group([ startBg, startTitle ])
@@ -65,7 +74,11 @@ class Menu extends Phaser.Scene {
             this.time.delayedCall(200, () => {
                 startBg.setFrame(0)
                 startTitle.setColor('#4e6a6c')
-                this.scene.start('facilityScene')
+                this.game.canvas.classList.add('moving-card')
+            
+                this.time.delayedCall(4375, () => {
+                    this.scene.start('facilityScene')
+                })
 
             })
         })
