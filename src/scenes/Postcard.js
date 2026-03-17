@@ -11,6 +11,13 @@ class Postcard extends Phaser.Scene {
     }
 
     create() {
+        // reset flip anim
+        this.time.delayedCall(4375 / 2.0, () => {
+            this.game.canvas.classList.remove('moving-card')
+            this.game.canvas.style.transform = ''
+        })
+        
+
         // postcard
         this.background = this.add.sprite(0, 0, 'physicalBackground').setOrigin(0, 0)
         this.postCard = this.add.sprite(0, 0, 'card').setOrigin(0, 0)
@@ -32,6 +39,52 @@ class Postcard extends Phaser.Scene {
         this.text = this.add.text(game.config.width/2.0 + 10, 4, 
             `Rust grows, despite the time gained back. In abstract, what may matter more? Aching more to fill a void which you could never fill.`, 
             textConfig)
+
+        // click sound
+        const clickSound = this.sound.add('click-sound', {
+            volume: this.game.settings.volume
+        })
+
+
+        // button config
+        let buttonConfig = {
+            fontFamily: 'chronal',
+            fontSize: '40px',
+            backgroundColor: '#a4b9c700',
+            color: '#4e6a6c',
+            align: 'center',
+            padding: {
+                top: 0,
+                bottom: 0,
+            },
+            fixedWidth: game.config.width
+        }
+
+        // start buttons
+        const menuBg = this.add.image(0, 0, 'button', 0).setOrigin(0.5, 0.5)
+        const menuTitle = this.add.text(0, 2, `Menu`, buttonConfig).setOrigin(0.5, 0.5)
+        const menuGroup = this.add.group([ menuBg, menuTitle ])
+        
+        const menuContain = this.add.container(menuBg.width/2.0 + 12 , menuBg.height, [ menuBg, menuTitle ])
+        menuBg.setInteractive()
+
+        menuBg.on('pointerup', () => {
+            clickSound.play()
+            
+            menuBg.setFrame(1)
+            menuTitle.setColor('#49fff5')
+            this.time.delayedCall(200, () => {
+                menuBg.setFrame(0)
+                menuTitle.setColor('#4e6a6c')
+                this.game.canvas.classList.add('moving-card')
+            
+                this.time.delayedCall(4375, () => {
+                    this.sound.stopAll()
+                    this.scene.start('menuScene')
+                })
+
+            })
+        })
     }
 
     update() {
