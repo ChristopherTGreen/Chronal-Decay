@@ -5,11 +5,13 @@ class TemporalManager {
         this.history = [] // history of past commands (maybe find way to save memory)
         // could make this a fixed array
         this.index = 0
-        this.mode = 'IDLE' // Idle, Recording, Static, Replay
+        this.mode = 'IDLE' // Idle, Record, Static, Replay
         this.timer = 0
-        this.timeMin = 1000 // min time in static
-        this.timeMax = 10000 // max time in static
+        this.timeMin = 1000 // min time in static, will be checking which frame current anim is in, mostlikely for 1
+        this.timeMax = 10000 // max time in static, will be checking which frame current anim is in, most likely for 13
         this.currMaxIndex = 0
+
+        this.staticDist = 100000000000 // distance required to replay
 
         // variables for camera
         this.worldDelta = 0.0
@@ -43,6 +45,8 @@ class TemporalManager {
             this.history.push({
                 x: this.object.x,
                 y: this.object.y,
+                velX: this.object.body.velocity.x,
+                velY: this.object.body.velocity.y,
                 command: comm,
                 //anim: this.object.anims.currentAnim.key, // maybe, will probably be a trouble child
                 flipX: this.object.flipX, // might get rid of depending on animations
@@ -53,6 +57,8 @@ class TemporalManager {
             this.history.push({
                 x: this.object.x,
                 y: this.object.y,
+                velX: this.object.body.velocity.x,
+                velY: this.object.body.velocity.y,
                 flipX: this.object.flipX, // might get rid of depending on animations
                 state: this.object.playerFSM
             })
@@ -64,13 +70,14 @@ class TemporalManager {
     // sets new mode, may not be required anymore due to state machine
     setMode(newMode) {
         this.mode = newMode
+        this.scene.worldState = this.mode
         if (newMode === 'STATIC') {
             // reset index to the end of the recording
             this.index = this.history.length - 1
         }
     }
 
-    // update shadow to go to the past
+    // update shadow to go to the past, using positions
     updatePast() {
         const data = this.history[this.index]
         if (!data) return
@@ -87,7 +94,14 @@ class TemporalManager {
 
         this.scene.shadow.command = data.command
         
-        
+    }
+
+    // updates shadow with initial velocity when playing back, in order to prevent issues in playback
+    updateVelOnce() {
+        const data = this.history[this.index]
+        if (!data) return
+
+        this.scene.shadow.setVelocity(data.velX, data.velY)
     }
 
 
@@ -106,8 +120,14 @@ class TemporalManager {
             this.worldDelta -= checkInterval
         }
 
-        if (this.currZoom != 0) this.scene.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 1)
-        else this.scene.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 0)
+        if (this.currZoom != 0) {
+            this.scene.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 1)
+            //this.scene.enemyCam.setZoom(Phaser.Math.Linear(0.0, 1.0, 1.0 - this.currZoom), 1)
+        }
+        else {
+            this.scene.cameras.main.setZoom(Phaser.Math.Linear(0.0, 1.0, this.currZoom), 0)
+            //this.scene.enemyCam.setZoom(Phaser.Math.Linear(0.0, 1.0, 1.0 - this.currZoom), 0)
+        }
     }
 }
 
@@ -116,11 +136,32 @@ class TemporalManager {
 class IdleTimeState extends State {
     // enter initial call
     enter (scene, manager) {
+        console.log('idle')
+
         manager.history.length = 0
         manager.index = 0
         scene.ghostCollision.active = false
         scene.shadow.setVisible(false)
         scene.shadow.setGravityY(0)
+
+        // visibility management
+        scene.physicalVisList.forEach((obj) => {
+            obj.setVisible(true)
+        })
+        scene.abstractVisList.forEach((obj) => {
+            obj.setVisible(false)
+        })
+        scene.abstractPanels.pause()
+
+        // reset camera to world state boundaries
+        scene.cameraTrackList.forEach((cam) => {
+            cam.setBounds(0, 0, scene.map.widthInPixels, scene.map.heightInPixels)
+            cam.setZoom(1.0, 1.0)
+        })
+        scene.cameras.main.setZoom(1.0, 1.0)
+
+        // recharge
+        scene.restoring(manager.timeMax * ((scene.uiTime.frame.name + 1) / 13))
 
         // update text
         scene.debugText.setText(`Mode: ${manager.mode}`)
@@ -128,12 +169,10 @@ class IdleTimeState extends State {
 
     // executes every call/frame
     execute(scene, manager) {
-        console.log('idle')
-
-        if (keyQ.isDown) {
+        console.log(scene.uiTime.frame.name)
+        if (keyQ.isDown && scene.uiTime.frame.name > 1) {
             manager.setMode('RECORDING')
             this.stateMachine.transition('record')
-            console.log('ah')
         }
     }
 }
@@ -143,9 +182,12 @@ class IdleTimeState extends State {
 class RecordState extends State {
     // executes upon entering
     enter(scene, manager) {
+        console.log('record')
+
         manager.timer = 0
-        scene.terrainLayer.setVisible(false)
-        scene.abstractLayer.setVisible(true)
+
+        // plays animation for record based on given duration time
+        scene.recording(manager.timeMax * ((scene.uiTime.frame.name + 1) / 13))
 
         // update text
         scene.debugText.setText(`Mode: ${manager.mode}`)
@@ -153,21 +195,19 @@ class RecordState extends State {
 
     // executes every call/frame
     execute(scene, manager) {
-        console.log('record')
-        
+        // handle zoom updates and manager capacity tracking
         manager.record(scene.curr_comm)
 
-        // handle zoom updates and manager capacity tracking
-        manager.timer += scene.curr_delta
-        manager.cameraUpdate(scene.curr_delta)
+        //manager.timer += scene.curr_delta
 
-        if (manager.timer >= manager.timeMax) {
+        //manager.timer >= manager.timeMax, oriignally in this if statement
+        if (scene.uiTime.frame.name == 0) {
             manager.setMode('STATIC')
             this.stateMachine.transition('static')
         }
 
 
-        if (keyQ.isDown && manager.timer > manager.timeMin) {
+        if (keyQ.isDown && scene.uiTime.frame.name < 12) {
             manager.setMode('STATIC')
             this.stateMachine.transition('static')
         }
@@ -179,13 +219,28 @@ class RecordState extends State {
 class StaticState extends State {
     // executes upon entering
     enter(scene, manager) {
+        console.log('static')
         scene.shadow.setGravityY(0)
         manager.currMaxIndex = manager.history.length
         scene.shadow.setVisible(true)
 
+        // visibility management
+        scene.physicalVisList.forEach((obj) => {
+            obj.setVisible(false)
+        })
+        scene.abstractVisList.forEach((obj) => {
+            obj.setVisible(true)
+        })
+        scene.abstractPanels.resume()
+
+        scene.uiTime.stop()
+        scene.uiTime.setFrame(0)
+        manager.timer = 0
+
         // frees camera to prevent shifting of camera when expanding
-        scene.cameras.main.removeBounds();
-        scene.playerCam.removeBounds();
+        scene.cameraTrackList.forEach((cam) => {
+            cam.removeBounds()
+        })
 
         // update text
         scene.debugText.setText(`Mode: ${manager.mode}`)
@@ -193,24 +248,24 @@ class StaticState extends State {
 
     // executes every call/frame
     execute(scene, manager) {
-        console.log('static')
-        console.log(scene.curr_delta)
 
         // handle zoom updates
         manager.cameraUpdate(scene.curr_delta)
         
-        console.log(manager.index)
-        console.log(manager.currMaxIndex)
+        if (manager.timer >= (manager.currMaxIndex / 13)) {
+            manager.timer = 0
+            scene.uiTime.setFrame(scene.uiTime.frame.name + 1)
+        }
+        
         if (keyQ.isDown && manager.index != 0) {
             manager.index = Math.max(0, manager.index - 1)
+            manager.timer += 1
             manager.updatePast()
-            console.log('ah')
         }
 
-        if (keyE.isDown) {
+        if (keyE.isDown && Phaser.Math.Distance.Between(scene.shadow.x, scene.shadow.y, scene.player.x, scene.player.y) < manager.staticDist) {
             manager.setMode('REPLAY')
             this.stateMachine.transition('replay')
-            console.log('ah')
         }
     }
 }
@@ -221,14 +276,9 @@ class ReplayState extends State {
     // executes upon entering
     enter(scene, manager) {
         scene.shadow.setGravityY(300)
-        scene.terrainLayer.setVisible(true)
-        scene.abstractLayer.setVisible(false)
         scene.ghostCollision.active = true
 
-        // reset camera to world state boundaries
-        scene.cameras.main.setBounds(0, 0, scene.map.widthInPixels, scene.map.heightInPixels);
-        scene.playerCam.setBounds(0, 0, scene.map.widthInPixels, scene.map.heightInPixels);
-        scene.cameras.main.setZoom(1.0, 1.0)
+        manager.updateVelOnce()
 
         // update text
         scene.debugText.setText(`Mode: ${manager.mode}`)
@@ -237,6 +287,9 @@ class ReplayState extends State {
     // executes every call/frame
     execute(scene, manager) {
         console.log('replay')
+
+        // handle zoom updates
+        manager.cameraUpdate(scene.curr_delta)
 
         if (manager.index < manager.currMaxIndex) {
             manager.updateForward()

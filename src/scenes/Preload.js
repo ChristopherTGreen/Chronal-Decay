@@ -12,21 +12,67 @@ class Preload extends Phaser.Scene {
         this.load.path = './assets/'
 
         // load assets
-        this.load.image('character', 'physical/nonstatic/Player.png')
-        this.load.image('shadow', 'abstract/nonstatic/Shadow.png')
-        this.load.image('enemy', 'abstract/nonstatic/EnemyEye.png')
-        this.load.image('facilityTilesetImage', 'physical/static/TilesetPhysical.png')
-        this.load.image('abstractTilesetImage', 'abstract/static/TilesetAbstract.png')
-        this.load.tilemapTiledJSON('facilityTilemapJSON', 'physical/static/facility.json')
+        this.load.spritesheet('button', 'static/Button-Sheet.png', {
+            frameWidth: 192,
+            frameHeight: 48
+        })
         
+        this.load.spritesheet('character', 'nonstatic/Player.png', {
+            frameWidth: 32,
+            frameHeight: 64
+        })
+        this.load.spritesheet('shadow', 'nonstatic/Shadow.png', {
+            frameWidth: 32,
+            frameHeight: 64
+        })
+        this.load.image('enemy', 'nonstatic/EnemyEye.png')
+        this.load.image('enemyIcon', 'nonstatic/EnemyEyeIcon.png')
+        this.load.spritesheet('enemyProj', 'nonstatic/EnemyProj.png', {
+            frameWidth: 4, 
+            frameHeight: 6
+        })
+        this.load.spritesheet('uiTime', 'ui/UI-Time.png', {
+            frameWidth: 128, 
+            frameHeight: 128
+        })
+        this.load.spritesheet('uiScan', 'ui/UI-Scanner.png', {
+            frameWidth: 128, 
+            frameHeight: 128
+        })
+
+        this.load.image('card', 'static/Card.png')
+
+        this.load.image('abstractPanel', 'nonstatic/Abstract-03.png')
+        this.load.image('abstractBackground', 'static/Abstract-02.png')
+        this.load.image('physicalBackground', 'static/Background.png')
+        this.load.image('physicalBackgroundCity', 'static/BackgroundCity.png')
+        this.load.image('physicalBackgroundWall', 'static/BackgroundWall.png')
+        this.load.image('facilityTilesetImage', 'static/TilesetPhysical.png')
+        this.load.image('abstractTilesetImage', 'static/TilesetAbstract.png')
+        this.load.image('doorMessage', 'static/DoorMessage.png')
+        this.load.tilemapTiledJSON('facilityTilemapJSON', 'static/facility.json')
+        
+        // load fonts
+        this.load.path = './assets/fonts/'
+        this.load.font('chronal', 'Spaceport_2006.otf')
+
         // load audio
         this.load.path = './assets/audio/'
+        this.load.audio('click-sound', 'sfx/click.wav')
         this.load.audio('jump-sound', 'sfx/jump.wav')
+        this.load.audio('death-sound', 'sfx/death2.wav')
+        this.load.audio('hit-sound', 'sfx/hit.wav')
+        this.load.audio('wave-sound', 'sfx/wave.wav')
+        this.load.audio('charge-sound', 'sfx/charge.wav')
+
+        // load music
+        this.load.path = './assets/audio/'
+        this.load.audio('music', 'music/Chronal Decay.mp3')
         
         console.log('finished preload')
-    }
+    }   
 
     create() {
-        this.scene.start('facilityScene')
+        this.scene.start('menuScene')
     }
 }

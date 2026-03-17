@@ -26,7 +26,7 @@ class Shadow extends Phaser.Physics.Arcade.Sprite {
         //const sizeRateW = 1.92 // only for offset
         //const sizeDiffY = 30
         //const sizeRateY = 1.3 // only for offset
-        this.setSize(this.width, this.height/2).setOffset(0, this.height/2)
+        this.setSize(this.width/2, this.height/3).setOffset(this.width/4, this.height/1.5)
         this.setDragX(200)
         console.log("called constructor play")
 
@@ -133,7 +133,7 @@ class JumpShadowState extends State {
         let shadowVector = new Phaser.Math.Vector2(0, 0)
 
         // coyote jump
-        if(keySPACE.isDown && shadow.coyote) {
+        if(shadow.command == 'JUMP' && shadow.coyote) {
             shadow.body.setVelocityY(shadow.accelY)
             shadow.coyote = false
             

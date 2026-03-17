@@ -17,6 +17,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
         this.direction = direction
         this.hp = hp
+        this.recentHit = false
         this.initialDist = true
         this.coyoteTime = 2000
         this.coyote = true
@@ -26,7 +27,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         //const sizeRateW = 1.92 // only for offset
         //const sizeDiffY = 30
         //const sizeRateY = 1.3 // only for offset
-        this.setSize(this.width, this.height/2).setOffset(0, this.height/2)
+        this.setSize(this.width/2, this.height/3).setOffset(this.width/4, this.height/1.5)
         this.setDragX(200)
         console.log("called constructor play")
 
@@ -53,12 +54,11 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 class IdleState extends State {
     // enter initial call
     enter (scene, player) {
-
+        console.log('idle')
     }
 
     // executes every call/frame
     execute(scene, player) {
-        console.log('idle')
         let playerVector = new Phaser.Math.Vector2(0, 0)
         // movement transition
         if(keyLEFT.isDown || keyRIGHT.isDown) {
@@ -89,11 +89,14 @@ class IdleState extends State {
 // MoveState:
 // Player is currently moving
 class MoveState extends State {
+    enter(scene, player){
+        console.log('move')
+    }
+
     // executes every call/frame
     execute(scene, player) {
         // use destructuring to make a local copy of the keyboard object
         let playerVector = new Phaser.Math.Vector2(0, 0)
-        console.log('move')
         
         
         if(keyLEFT.isDown) {
@@ -136,9 +139,12 @@ class MoveState extends State {
 // JumpState:
 // Player is currently jumping
 class JumpState extends State {
+    enter(scene, player){
+        console.log('jump')
+    }
+
     // executes every call/frame
     execute(scene, player) {
-        console.log('jump')
         // use destructuring to make a local copy of the keyboard object
         let playerVector = new Phaser.Math.Vector2(0, 0)
 
@@ -191,6 +197,13 @@ class JumpState extends State {
 // Player is killed from age, and restarts game
 class DeathPState extends State {
     enter(scene, player) {
-        scene.scene.restart()
+        const str = 2000
+        const dur = 1000
+
+        scene.distort(str, dur)
+        scene.time.delayedCall(dur, () => {
+            scene.sound.stopAll()
+            scene.scene.restart()
+        })
     }
 }
