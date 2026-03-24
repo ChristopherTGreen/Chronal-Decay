@@ -168,7 +168,7 @@ class Facility extends Phaser.Scene {
                     let frameIndex = Math.floor((100 - this.player.hp) / 10)
                     frameIndex = Phaser.Math.Clamp(frameIndex, 0, 9)
                     this.player.setFrame(frameIndex)
-                    console.log(frameIndex)
+                    //console.log(frameIndex)
 
                     return true
                 }
@@ -339,7 +339,7 @@ class Facility extends Phaser.Scene {
     // updates the background to follow movement of the camera (maybe move to track camera velocity, not player)
     worldTileUpdate() {
         if (this.cameras.main._bounds && (this.cameras.main.worldView.left > this.cameras.main._bounds.x + 0 && this.cameras.main.worldView.right < this.cameras.main._bounds.right - 0)) {
-            console.log('tiles')
+            //console.log('tiles')
             this.background.tilePositionX += this.player.body.velocity.x / 5000
             this.backgroundWall.tilePositionX += this.player.body.velocity.x / 3000
             this.backgroundCity.tilePositionX += this.player.body.velocity.x / 2000

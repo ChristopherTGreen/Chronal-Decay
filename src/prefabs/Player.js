@@ -29,7 +29,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         //const sizeRateY = 1.3 // only for offset
         this.setSize(this.width/2, this.height/3).setOffset(this.width/4, this.height/1.5)
         this.setDragX(200)
-        console.log("called constructor play")
+        //console.log("called constructor play")
 
         // sound effects
         // jump sound
@@ -54,7 +54,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 class IdleState extends State {
     // enter initial call
     enter (scene, player) {
-        console.log('idle')
+        //console.log('idle')
     }
 
     // executes every call/frame
@@ -90,7 +90,7 @@ class IdleState extends State {
 // Player is currently moving
 class MoveState extends State {
     enter(scene, player){
-        console.log('move')
+        //console.log('move')
     }
 
     // executes every call/frame
@@ -101,12 +101,12 @@ class MoveState extends State {
         
         if(keyLEFT.isDown) {
             player.direction = 'left'
-            console.log('left')
+            //console.log('left')
             playerVector.x = -1
             scene.curr_comm = 'LEFT'
         } else if(keyRIGHT.isDown) {
             player.direction = 'right'
-            console.log('right')
+            //console.log('right')
             playerVector.x = 1
             scene.curr_comm = 'RIGHT'
         }
@@ -140,7 +140,7 @@ class MoveState extends State {
 // Player is currently jumping
 class JumpState extends State {
     enter(scene, player){
-        console.log('jump')
+        //console.log('jump')
     }
 
     // executes every call/frame
