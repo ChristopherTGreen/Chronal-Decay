@@ -44,11 +44,11 @@
             "scaleInDock": 1
         },
         "static/facility.tmx": {
-            "scale": 3,
-            "selectedLayer": 3,
+            "scale": 0.5,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 1175.3333333333333,
-                "y": 708.8333333333333
+                "x": 2018,
+                "y": 511
             }
         },
         "static/facility.tmx#tilesheet_abstract01": {
