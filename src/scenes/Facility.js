@@ -159,10 +159,10 @@ class Facility extends Phaser.Scene {
                 let playerHit = this.player.body.hitTest(x,y)
                 let shadowHit = this.shadow.body.hitTest(x,y)
                 if (shadowHit && this.worldState == 'REPLAY') {
-                    this.damageHit(this.shadow, 200, 100)
+                    this.damageHit(this.shadow, 200, 50)
                 }
                 if (shadowHit || playerHit) {
-                    this.damageHit(this.player, 200, 100)
+                    this.damageHit(this.player, 200, 50)
                     this.player.hp -= this.univDamage
 
                     let frameIndex = Math.floor((100 - this.player.hp) / 10)
