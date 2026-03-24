@@ -11,7 +11,7 @@ class TemporalManager {
         this.timeMax = 10000 // max time in static, will be checking which frame current anim is in, most likely for 13
         this.currMaxIndex = 0
 
-        this.staticDist = 100000000000 // distance required to replay
+        this.staticDist = 100 // distance required to replay
 
         // variables for camera
         this.worldDelta = 0.0
@@ -153,6 +153,10 @@ class IdleTimeState extends State {
         })
         scene.abstractPanels.pause()
 
+        // collision management
+        scene.terrainCollide.active = true
+        scene.abstractCollide.active = false
+
         // reset camera to world state boundaries
         scene.cameraTrackList.forEach((cam) => {
             cam.setBounds(0, 0, scene.map.widthInPixels, scene.map.heightInPixels)
@@ -233,6 +237,11 @@ class StaticState extends State {
         })
         scene.abstractPanels.resume()
 
+        // collision management
+        scene.terrainCollide.active = false
+        scene.abstractCollide.active = true
+
+        // time management
         scene.uiTime.stop()
         scene.uiTime.setFrame(0)
         manager.timer = 0
