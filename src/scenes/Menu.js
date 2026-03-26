@@ -43,6 +43,7 @@ class Menu extends Phaser.Scene {
         this.titleText = this.add.text(0, game.config.height/4.0, `Chronal Decay`, textConfig)
         textConfig.fontSize = 32
         this.authorText = this.add.text(0, game.config.height/4.0 + 96, `Developed by Christopher Green`, textConfig)
+        this.authorText = this.add.text(0, game.config.height/4.0 + 132, `To my father`, textConfig)
 
         // text config
         let buttonConfig = {
@@ -73,8 +74,9 @@ class Menu extends Phaser.Scene {
             this.time.delayedCall(200, () => {
                 startBg.setFrame(0)
                 startTitle.setColor('#4e6a6c')
+                this.game.canvas.classList.add('moving-card')
             
-                this.time.delayedCall(300, () => {
+                this.time.delayedCall(4375, () => {
                     this.scene.start('facilityScene')
                 })
 

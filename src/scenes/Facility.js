@@ -52,7 +52,7 @@ class Facility extends Phaser.Scene {
 
         // variables
         this.curr_delta = 0
-        this.univDamage = 5
+        this.univDamage = 4
         this.worldState = 'IDLE'
 
         this.swirlPlugin = this.plugins.get('rexSwirlPipeline')
@@ -62,7 +62,7 @@ class Facility extends Phaser.Scene {
         const tileset_abstract = this.map.addTilesetImage('tilesheet_abstract01', 'abstractTilesetImage')
         const tileset_decor = this.map.addTilesetImage('tilesheet_door', 'doorMessage')
         this.terrainLayer = this.map.createLayer('PhysicalGround', tileset_ground, 0, 0).setDepth(10)
-        this.abstractLayer = this.map.createLayer('AbstractGround', tileset_abstract, 0, 0).setDepth(10)
+        this.abstractLayer = this.map.createLayer('AbstractGround', tileset_abstract, 0, -8).setDepth(10)
         this.decorLayer = this.map.createLayer('Scenary', tileset_decor, 0, -32).setDepth(3)
 
         const spawn = this.map.findObject("Objects", obj => obj.name === "SpawnPoint")
@@ -82,7 +82,7 @@ class Facility extends Phaser.Scene {
             scale: { start: 0.01, end: 1},
             alpha: { start: 1, end: 0},
             angle: { min: 0, max: 360},
-            frequency: 250,
+            frequency: 1000,
             lifespan: 20000,
             rotate: {
                 onUpdate: (particle) => {
@@ -117,7 +117,7 @@ class Facility extends Phaser.Scene {
         // text config
         let textConfig = {
             fontFamily: 'chronal',
-            fontSize: '14px',
+            fontSize: '16px',
             backgroundColor: '#a4b9c700',
             color: '#8ab4f8',
             align: 'left',
@@ -128,8 +128,12 @@ class Facility extends Phaser.Scene {
             lineSpacing: 10,
             wordWrap: { width: 430, useAdvancedWrap: true }
         }
-        this.text = this.add.text(spawn.x - 80, spawn.y - 140, 
-            `Instructions: WASD to move\nSpacebar to Jump\nIn Physical - Press Q to record\n In Abstract - Hold Q to rewind\nNear Past Shadow - Press E \nto replay`, 
+        this.text = this.add.text(spawn.x, spawn.y - 132, 
+            `Instructions: WASD to move\nSpacebar to Jump\nIn Physical - Press Q to record\n In Abstract - Hold Q to rewind\nPress E to replay`, 
+            textConfig)
+
+        this.devText = this.add.text(end.x - 128, end.y - 80, 
+            `Quick Test Ending`, 
             textConfig)
 
 
@@ -237,11 +241,11 @@ class Facility extends Phaser.Scene {
         Phaser.Utils.Array.SendToBack(this.cameras.cameras, this.enemyCam)
 
         // lists of objects and what they ignore
-        const mainIgnoreList = [this.text, this.player, this.terrainLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.decorLayer, this.enemyEye, this.enemyProj, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]
+        const mainIgnoreList = [this.text, this.player, this.terrainLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.decorLayer, this.enemyEye, this.enemyProj, this.debugText, this.devText, this.uiTime, this.uiScan, this.enemyIcon]
         const playerIgnoreList = [ this.shadow, this.abstractLayer, this.abstractBackground, this.abstractPanels, this.enemyEye, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]
         const uiIgnoreList = [this.text, this.terrainLayer, this.abstractLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.decorLayer, this.player, this.shadow, this.enemyEye, this.enemyProj, this.enemyIcon, this.debugText]
-        const miniMapIgnoreList = [this.text, this.player, this.shadow, this.terrainLayer, this.abstractLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.decorLayer, this.enemyEye, this.enemyProj, this.debugText, this.uiTime, this.uiScan]
-        const enemyIgnoreList = [this.text, this.terrainLayer, this.abstractLayer, this.background, this.backgroundWall, this.backgroundCity, this.decorLayer, this.player, this.shadow, this.enemyProj, this.debugText, this.uiTime, this.uiScan, this.enemyIcon]  
+        const miniMapIgnoreList = [this.text, this.player, this.shadow, this.terrainLayer, this.abstractLayer, this.abstractBackground, this.abstractPanels, this.background, this.backgroundWall, this.backgroundCity, this.decorLayer, this.enemyEye, this.enemyProj, this.debugText, this.devText, this.uiTime, this.uiScan]
+        const enemyIgnoreList = [this.text, this.terrainLayer, this.abstractLayer, this.background, this.backgroundWall, this.backgroundCity, this.decorLayer, this.player, this.shadow, this.enemyProj, this.debugText, this.devText, this.uiTime, this.uiScan, this.enemyIcon]  
         this.cameraTrackList = [this.cameras.main, this.playerCam, this.enemyCam]
         this.cameras.main.ignore(mainIgnoreList)
         this.playerCam.ignore(playerIgnoreList)
@@ -289,13 +293,14 @@ class Facility extends Phaser.Scene {
 
 
         // set collisions
+        // map collision
         this.physics.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels)
         this.terrainLayer.setCollisionByProperty({ collides: true })
-        this.abstractLayer.setCollisionByProperty({ collides: true })
-        this.terrainCollide = this.physics.add.collider(this.player, this.terrainLayer)
-        this.abstractCollide = this.physics.add.collider(this.player, this.abstractLayer)
+        this.physics.add.collider(this.player, this.terrainLayer)
+        // ghost collision between player and shadow
         this.ghostCollision = this.physics.add.collider(this.player, this.shadow)
-        this.physics.add.collider(this.shadow, this.terrainLayer) // only needs to collide with real world
+        // shadow collision with the map
+        this.physics.add.collider(this.shadow, this.terrainLayer)
 
         // initialize time manager
         this.manager = new TemporalManager(this, this.player)
