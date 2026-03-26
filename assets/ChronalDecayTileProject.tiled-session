@@ -1,0 +1,66 @@
+{
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "": {
+            "scaleInEditor": 1
+        },
+        "C:/Users/ctgre/.vscode/vscode_folder_storage/phaser3/CP-Slime-World-master/assets/overworld.tmx": {
+            "scale": 0.550703125,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 320.4993616115761,
+                "y": 494.82196056178185
+            }
+        },
+        "C:/Users/ctgre/.vscode/vscode_folder_storage/phaser3/CP-Slime-World-master/assets/overworld.tmx#Ground-04-Sheet": {
+            "scaleInDock": 1
+        },
+        "C:/Users/ctgre/.vscode/vscode_folder_storage/phaser3/CP-Slime-World-master/assets/overworld.tmx#tileset": {
+            "scaleInDock": 1
+        },
+        "physical/static/facility.tmx": {
+            "scale": 0.33,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 975.7575757575758,
+                "y": 834.8484848484848
+            }
+        },
+        "physical/static/facility.tmx#basic_ground": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "physical/static/facility.tmx#tilesheet_abstract01": {
+            "scaleInDock": 1
+        },
+        "physical/static/facility.tmx#tilesheet_ground01": {
+            "scaleInDock": 1
+        },
+        "static/facility.tmx": {
+            "scale": 0.5,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 2810,
+                "y": 619
+            }
+        },
+        "static/facility.tmx#tilesheet_abstract01": {
+            "scaleInDock": 1
+        },
+        "static/facility.tmx#tilesheet_door": {
+            "scaleInDock": 1
+        },
+        "static/facility.tmx#tilesheet_ground01": {
+            "scaleInDock": 1
+        }
+    },
+    "openFiles": [
+        "static/facility.tmx"
+    ],
+    "recentFiles": [
+        "static/facility.tmx",
+        "physical/static/facility.tmx",
+        "C:/Users/ctgre/.vscode/vscode_folder_storage/phaser3/CP-Slime-World-master/assets/overworld.tmx"
+    ]
+}
