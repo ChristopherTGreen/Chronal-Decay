@@ -50,7 +50,7 @@ class EnemyEye extends Phaser.Physics.Arcade.Sprite {
         this.body.setAllowGravity(false)
         this.setDragX(100)
         this.setDragY(50)
-        console.log("called constructor")
+        //console.log("called constructor")
 
         // initialize state machine managing eye enemy (initial state, possible states, state args[])
         scene.eyeFSM = new StateMachine('patrol', {
@@ -74,7 +74,7 @@ class EnemyEye extends Phaser.Physics.Arcade.Sprite {
 class PatrolState extends State {
     // executes upon entering
     enter(scene, enemy, target) {
-        console.log('patrol')
+        //console.log('patrol')
     }
 
     // executes every call/frame
@@ -83,7 +83,7 @@ class PatrolState extends State {
         enemy.timer += scene.curr_delta
         if (enemy.timer > enemy.freqTips) {
             enemy.timer = 0
-            console.log("new position")
+            //console.log("new position")
             // randomly given location for a hint (think alien isolation kind of)
             enemy.targetGivenLoc = new Phaser.Math.Vector2(target.x + Phaser.Math.Between(-enemy.guidingMargin, enemy.guidingMargin), target.y + Phaser.Math.Between(-enemy.guidingMargin, enemy.guidingMargin))
         }
@@ -134,7 +134,7 @@ class WatchState extends State {
     enter(scene, enemy, target) {
         enemy.timer = Phaser.Math.Between(enemy.timer/2.0, enemy.timer)
         
-        console.log('watch')
+        //console.log('watch')
     }
 
     // executes every call/frame
@@ -143,7 +143,7 @@ class WatchState extends State {
         enemy.timer += scene.curr_delta
         if (enemy.timer > enemy.freqTips) {
             enemy.timer = 0
-            console.log("new position")
+            //console.log("new position")
             // randomly given location for a hint (think alien isolation kind of)
             enemy.targetGivenLoc = new Phaser.Math.Vector2(target.x + Phaser.Math.Between(-enemy.guidingMargin, enemy.guidingMargin), target.y + Phaser.Math.Between(-enemy.guidingMargin, enemy.guidingMargin))
 
@@ -176,7 +176,7 @@ class ChaseState extends State {
     enter(scene, enemy, target) {
         
         
-        console.log('chase')
+        //console.log('chase')
     }
     
     // executes every call/frame
@@ -221,7 +221,7 @@ class ChaseState extends State {
 
         if ((scene.manager.mode == 'IDLE' || scene.manager.mode == 'RECORDING') && distance > enemy.loseDist) {
             enemy.found = false
-            console.log('lost target, continuing patrol')
+            //console.log('lost target, continuing patrol')
             this.stateMachine.transition('patrol')
         }
 
@@ -259,7 +259,7 @@ class ChargeState extends State {
             rate: 5000.0/dur // 5 sec / target (#) sec
         })
         
-        console.log('chase')
+        //console.log('chase')
     }
 
     // executes every call/frame
@@ -310,7 +310,7 @@ class FireState extends State {
     enter(scene, enemy, target) {
         scene.enemyProj.start()
         
-        console.log('fire')
+        //console.log('fire')
     }
 
     // executes every call/frame
@@ -321,7 +321,7 @@ class FireState extends State {
 
         if (enemy.firing == false) {
             scene.enemyProj.stop()
-            console.log('stopping anim')
+            //console.log('stopping anim')
             this.stateMachine.transition('chase')
         }
     }

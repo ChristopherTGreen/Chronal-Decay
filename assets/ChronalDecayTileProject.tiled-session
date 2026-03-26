@@ -1,12 +1,6 @@
 {
-    "Map/SizeTest": {
-        "height": 4300,
-        "width": 2
-    },
-    "activeFile": "static/facility.tmx",
     "expandedProjectPaths": [
     ],
-    "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "": {
             "scaleInEditor": 1
@@ -47,8 +41,8 @@
             "scale": 3,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 1175.3333333333333,
-                "y": 708.8333333333333
+                "x": 2810,
+                "y": 619
             }
         },
         "static/facility.tmx#tilesheet_abstract01": {
@@ -61,22 +55,12 @@
             "scaleInDock": 1
         }
     },
-    "last.imagePath": "C:/Users/ctgre/.vscode/vscode_folder_storage/phaser3/Chronal Decay/assets/static",
     "openFiles": [
         "static/facility.tmx"
     ],
-    "project": "ChronalDecayTileProject.tiled-project",
-    "property.type": "bool",
     "recentFiles": [
         "static/facility.tmx",
         "physical/static/facility.tmx",
         "C:/Users/ctgre/.vscode/vscode_folder_storage/phaser3/CP-Slime-World-master/assets/overworld.tmx"
-    ],
-    "tileset.embedInMap": true,
-    "tileset.tileSize": {
-        "height": 64,
-        "width": 32
-    },
-    "tileset.transparentColor": "#000000",
-    "tileset.useTransparentColor": true
+    ]
 }

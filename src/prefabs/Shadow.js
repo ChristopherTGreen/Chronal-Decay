@@ -28,7 +28,7 @@ class Shadow extends Phaser.Physics.Arcade.Sprite {
         //const sizeRateY = 1.3 // only for offset
         this.setSize(this.width/2, this.height/3).setOffset(this.width/4, this.height/1.5)
         this.setDragX(200)
-        console.log("called constructor play")
+        //console.log("called constructor play")
 
         // initialize state machine managing hero (initial state, possible states, state args[])
         scene.shadowFSM = new StateMachine('idleS', {
@@ -57,8 +57,8 @@ class IdleShadowState extends State {
 
     // executes every call/frame
     execute(scene, shadow) {
-        console.log('idle')
-        console.log(shadow.command)
+        //console.log('idle')
+        //console.log(shadow.command)
         let shadowVector = new Phaser.Math.Vector2(0, 0)
         // movement transition
         if(shadow.command == 'LEFT'|| shadow.command == 'RIGHT') {
@@ -90,16 +90,16 @@ class MoveShadowState extends State {
     execute(scene, shadow) {
         // use destructuring to make a local copy of the keyboard object
         let shadowVector = new Phaser.Math.Vector2(0, 0)
-        console.log('move')
+        //console.log('move')
         
         
         if(shadow.command == 'LEFT') {
             shadow.direction = 'left'
-            console.log('left')
+            //console.log('left')
             shadowVector.x = -1
         } else if(shadow.command == 'RIGHT') {
             shadow.direction = 'right'
-            console.log('right')
+            //console.log('right')
             shadowVector.x = 1
         }
 
@@ -128,7 +128,7 @@ class MoveShadowState extends State {
 class JumpShadowState extends State {
     // executes every call/frame
     execute(scene, shadow) {
-        console.log('jump')
+        //console.log('jump')
         // use destructuring to make a local copy of the keyboard object
         let shadowVector = new Phaser.Math.Vector2(0, 0)
 

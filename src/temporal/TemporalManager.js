@@ -27,20 +27,11 @@ class TemporalManager {
     }
 
     update(time, delta) {
-        // time tracker, needed to put in update
-        //this.timer += delta
-
-        //console.log(delta)
-
-        //console.log(this.timer)
-
-        //if (this.timer >= this.timeMax) {
-        //    this.setMode('STATIC')
-        //}
+     
     }
 
     record(comm = null) {
-        console.log(comm)
+        //console.log(comm)
         if (this.object.name == 'player') {
             this.history.push({
                 x: this.object.x,
@@ -136,7 +127,7 @@ class TemporalManager {
 class IdleTimeState extends State {
     // enter initial call
     enter (scene, manager) {
-        console.log('idle')
+        //console.log('idle')
 
         manager.history.length = 0
         manager.index = 0
@@ -169,7 +160,7 @@ class IdleTimeState extends State {
 
     // executes every call/frame
     execute(scene, manager) {
-        console.log(scene.uiTime.frame.name)
+        //console.log(scene.uiTime.frame.name)
         if (keyQ.isDown && scene.uiTime.frame.name > 1) {
             manager.setMode('RECORDING')
             this.stateMachine.transition('record')
@@ -182,7 +173,7 @@ class IdleTimeState extends State {
 class RecordState extends State {
     // executes upon entering
     enter(scene, manager) {
-        console.log('record')
+        //console.log('record')
 
         manager.timer = 0
 
@@ -219,7 +210,7 @@ class RecordState extends State {
 class StaticState extends State {
     // executes upon entering
     enter(scene, manager) {
-        console.log('static')
+        //console.log('static')
         scene.shadow.setGravityY(0)
         manager.currMaxIndex = manager.history.length
         scene.shadow.setVisible(true)
@@ -286,7 +277,7 @@ class ReplayState extends State {
 
     // executes every call/frame
     execute(scene, manager) {
-        console.log('replay')
+        //console.log('replay')
 
         // handle zoom updates
         manager.cameraUpdate(scene.curr_delta)
@@ -294,8 +285,8 @@ class ReplayState extends State {
         if (manager.index < manager.currMaxIndex) {
             manager.updateForward()
             scene.shadowFSM.step()
-            console.log(manager.index)
-            console.log(manager.currMaxIndex)
+            //console.log(manager.index)
+            //console.log(manager.currMaxIndex)
             manager.index = Math.max(0, manager.index + 1) // runs every frame, be careful
         }
         else {
