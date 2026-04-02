@@ -37,18 +37,18 @@ class Facility extends Phaser.Scene {
         })
 
         
-        
-
+        // animations for temporal manager and UI
+        this.createAnimations()
 
         console.log('finished facility')
     }
 
     create() {
         // reset flip anim
-        this.time.delayedCall(4375 / 2.0, () => {
-            this.game.canvas.classList.remove('moving-card')
-            this.game.canvas.style.transform = ''
-        })
+        //this.time.delayedCall(4375 / 2.0, () => {
+        //    this.game.canvas.classList.remove('moving-card')
+        //    this.game.canvas.style.transform = ''
+        //})
 
         // variables
         this.curr_delta = 0
@@ -200,6 +200,8 @@ class Facility extends Phaser.Scene {
 
         this.physics.add.overlap(this.player, doorTrigger, () => {
             this.game.canvas.classList.add('moving-card')
+            this.game.config.autoCenter = Phaser.Scale.NONE
+            this.game.config.mode = Phaser.Scale.NONE
             
             this.time.delayedCall(4375, () => {
                 this.scene.start('postcardScene')
@@ -322,6 +324,9 @@ class Facility extends Phaser.Scene {
         keySPACE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
         keyQ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q)
         keyE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E)
+
+        this.player.x = end.x
+        this.player.y = end.y
     }
 
     update(time, delta) {
@@ -360,7 +365,7 @@ class Facility extends Phaser.Scene {
 
 
 
-    // plays the recording animation for the uiTime
+    // plays the recording animation for the uiTime (old, but keeping just in case)
     recording(timeRecordDur = 10000, timeRecordDelay = 1000, call = null) {
         if (this.anims.exists('recording')) this.anims.remove('recording')
         this.anims.create({
@@ -374,7 +379,7 @@ class Facility extends Phaser.Scene {
         })
         this.uiTime.play('recording')
     }
-    // plays the restoring animation for the uiTime
+    // plays the restoring animation for the uiTime (old, but keeping just in case)
     restoring(timeRestoreDur = 10000, timeRecordDelay = 1000, call = null) {
         if (this.anims.exists('restoring')) this.anims.remove('restoring')
         this.anims.create({
@@ -387,6 +392,23 @@ class Facility extends Phaser.Scene {
             repeat: 0,
         })
         this.uiTime.play('restoring')
+    }
+
+    // creates animmations for UI time, replacement for prev anims
+    createAnimations() {
+        // Recharge
+        this.anims.create({
+            key: 'ui_restoring',
+            frames: this.anims.generateFrameNumbers('uiTime', { frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] }),
+            repeat: 0
+        });
+
+        // Usage
+        this.anims.create({
+            key: 'ui_recording',
+            frames: this.anims.generateFrameNumbers('uiTime', { frames: [13, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0] }),
+            repeat: 0
+        });
     }
 
     // distorts the world in 3 different cameras

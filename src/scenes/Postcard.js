@@ -15,6 +15,8 @@ class Postcard extends Phaser.Scene {
         this.time.delayedCall(4375 / 2.0, () => {
             this.game.canvas.classList.remove('moving-card')
             this.game.canvas.style.transform = ''
+            this.game.config.mode = Phaser.Scale.FIT
+            this.game.config.autoCenter = Phaser.Scale.CENTER_BOTH
         })
         
 
@@ -73,15 +75,15 @@ class Postcard extends Phaser.Scene {
             
             menuBg.setFrame(1)
             menuTitle.setColor('#49fff5')
-            this.time.delayedCall(200, () => {
+            this.time.delayedCall(500, () => {
                 menuBg.setFrame(0)
                 menuTitle.setColor('#4e6a6c')
-                this.game.canvas.classList.add('moving-card')
+                //this.game.canvas.classList.add('moving-card')
             
-                this.time.delayedCall(4375, () => {
+                //this.time.delayedCall(4375, () => {
                     this.sound.stopAll()
                     this.scene.start('menuScene')
-                })
+                //})
 
             })
         })

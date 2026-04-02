@@ -1,24 +1,10 @@
 // Name: Christopher Green
 // Title: Chronal Decay
 // Time Spent: 40 hours at minimum
-// Features: 
-
-// Game AI
-// The enemy eye has several different states, along with behavioral tendencies, 
-// based on given world state, player position, and shadow position. Will always
-// chase shadow if present in replay state. 
-
-// Cameras:
-// There are 5 cameras, which track different aspects. There is a minimap top-right
-// which displays the current position of the enemy eye from afar. 
-// Another camera is the UI itself, to prevent distortions from affecting it.
-// Another camera, or several, is for the player, enemy, and the physical background.
-
-// Postcard flip:
-// The postcard flips, and right when you can't see either side, it switches scenes for a smooth transition.
-
-// Subtle Death:
-// Player ages, eventually corroding into rust and ashes.
+// Project Theme: Postcard
+// Note: I may or may not have gone to niche. More specifically, it was meant for my father, meaning
+// only he understands the context, and since the world this is somewhat based on, would require an hour of
+// explanation, some context was lost in the process, which I hope to improve upon in the future.
 
 
 "use strict"
@@ -30,8 +16,12 @@ let config = {
     height: 480,
     parent: 'Chronal Decay',
     backgroundColor: '#ffffff',
+    resolution: 1,
     scale: {
-        zoom: 1
+        zoom: 1,
+        //mode: Phaser.Scale.NONE,
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
     },
     render: {
         pixelArt: true
@@ -68,6 +58,5 @@ let keyLEFT, keyRIGHT, keyUP, keyDOWN, keyQ, keyE, keySPACE
 // initial settings
 game.settings = {
     volume: 1,
-    music: 1,
-    highScore: 0
+    music: 1
 }

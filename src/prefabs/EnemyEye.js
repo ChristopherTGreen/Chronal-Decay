@@ -239,7 +239,7 @@ class ChaseState extends State {
 class ChargeState extends State {
     // executes upon entering
     enter(scene, enemy, target) {
-        const str = 100
+        const str = 65
         const dur = 3000
         scene.distort(str, dur)
         scene.time.delayedCall(dur * 2, () => {
