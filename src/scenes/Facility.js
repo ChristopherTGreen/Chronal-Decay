@@ -202,6 +202,7 @@ class Facility extends Phaser.Scene {
             this.game.canvas.classList.add('moving-card')
             this.game.config.autoCenter = Phaser.Scale.NONE
             this.game.config.mode = Phaser.Scale.NONE
+            this.scale.autoCenter = Phaser.Scale.NONE
             
             this.time.delayedCall(4375, () => {
                 this.scene.start('postcardScene')
@@ -324,9 +325,6 @@ class Facility extends Phaser.Scene {
         keySPACE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
         keyQ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q)
         keyE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E)
-
-        this.player.x = end.x
-        this.player.y = end.y
     }
 
     update(time, delta) {

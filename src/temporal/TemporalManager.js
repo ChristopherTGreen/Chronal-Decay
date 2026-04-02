@@ -58,9 +58,9 @@ class TemporalManager {
         }
 
         this.history[this.index] = data
-        console.log(data)
-        console.log(this.index)
-        console.log(this.tail)
+        //console.log(data)
+        //console.log(this.index)
+        //console.log(this.tail)
 
         this.index = (this.index + 1) % this.timeMax
 
@@ -93,7 +93,7 @@ class TemporalManager {
         const data = this.history[this.index]
         if (!data) return
 
-        console.log('success past movement')
+        //console.log('success past movement')
         this.scene.shadow.setPosition(data.x, data.y)
         this.scene.shadow.setFlipX(data.flipX)
         //if (this.object.name == 'player') this.scene.shadow.play(data.anim, true)
@@ -134,7 +134,7 @@ class TemporalManager {
         if (this.mode == 'IDLE') ratio = this.index / this.timeMax
         if (this.mode == 'STATIC') ratio = (this.isFull) ? 1 - (this.univIndex / this.timeMax) : 1 - (this.index / this.timeMax)
         if (this.mode == 'REPLAY') ratio = this.univIndex / this.timeMax
-            console.log(ratio)
+            //console.log(ratio)
 
         // moves one by one
         if (this.scene.uiTime.anims.currentAnim?.key !== animKey) {
@@ -178,7 +178,7 @@ class TemporalManager {
 class IdleTimeState extends State {
     // enter initial call
     enter (scene, manager) {
-        console.log('idle')
+        //console.log('idle')
         
         manager.clearHistory()
         scene.ghostCollision.active = false
@@ -218,7 +218,7 @@ class IdleTimeState extends State {
         manager.record(scene.curr_comm)
         if (!manager.isFull) manager.syncUI(true)
 
-        console.log(scene.uiTime.frame.name)
+        //console.log(scene.uiTime.frame.name)
         if (keyQ.isDown && ((!manager.isFull && manager.index > manager.timeMin) || (manager.isFull))) {
             manager.setMode('STATIC')
             this.stateMachine.transition('static')
@@ -232,7 +232,7 @@ class IdleTimeState extends State {
 class StaticState extends State {
     // executes upon entering
     enter(scene, manager) {
-        console.log('static')
+        //console.log('static')
         scene.shadow.setGravityY(0)
         manager.currMaxIndex = manager.index
         scene.shadow.setVisible(true)
@@ -263,9 +263,9 @@ class StaticState extends State {
         // update text
         scene.debugText.setText(`Mode: ${manager.mode}`)
 
-        console.log(manager.index)
-        console.log(manager.tail)
-        console.log(manager.currMaxIndex)
+        //console.log(manager.index)
+        //console.log(manager.tail)
+        //console.log(manager.currMaxIndex)
     }
 
     // executes every call/frame
@@ -311,7 +311,7 @@ class ReplayState extends State {
 
     // executes every call/frame
     execute(scene, manager) {
-        console.log('replay')
+        //console.log('replay')
 
         //if (manager.timer >= (manager.currMaxIndex / 13)) {
         //    manager.timer = 0
@@ -321,9 +321,9 @@ class ReplayState extends State {
 
         // handle zoom updates
         manager.cameraUpdate(scene.curr_delta)
-        console.log(manager.index)
-        console.log(manager.tail)
-        console.log(manager.currMaxIndex)
+        //console.log(manager.index)
+        //console.log(manager.tail)
+        //console.log(manager.currMaxIndex)
 
         if (manager.index !== manager.currMaxIndex) {
             manager.updateForward()

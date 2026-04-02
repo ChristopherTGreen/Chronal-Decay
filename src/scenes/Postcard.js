@@ -12,11 +12,12 @@ class Postcard extends Phaser.Scene {
 
     create() {
         // reset flip anim
-        this.time.delayedCall(4375 / 2.0, () => {
+        this.time.delayedCall(4500 / 2.0, () => {
             this.game.canvas.classList.remove('moving-card')
             this.game.canvas.style.transform = ''
             this.game.config.mode = Phaser.Scale.FIT
             this.game.config.autoCenter = Phaser.Scale.CENTER_BOTH
+            this.scale.autoCenter = Phaser.Scale.CENTER_BOTH
         })
         
 
