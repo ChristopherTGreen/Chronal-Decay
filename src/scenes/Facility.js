@@ -129,7 +129,7 @@ class Facility extends Phaser.Scene {
             wordWrap: { width: 430, useAdvancedWrap: true }
         }
         this.text = this.add.text(spawn.x - 80, spawn.y - 140, 
-            `Instructions: WASD to move\nSpacebar to Jump\nIn Physical - Press Q to record\n In Abstract - Hold Q to rewind\nNear Past Shadow - Press E \nto replay`, 
+            `Instructions: WASD to move\nSpacebar to Jump\nHold Q to rewind\nNear Past Shadow - Press E \nto replay`, 
             textConfig)
 
 
