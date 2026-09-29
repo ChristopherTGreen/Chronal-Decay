@@ -5,6 +5,12 @@ class Facility extends Phaser.Scene {
 
     preload() {
         //this.load.plugin('rextcrpplugin', './lib/tcrp.js', true);
+        //this.load.plugin('rexswirlpipelineplugin', './lib/rexswirlpipelineplugin.min.js', true);
+        this.load.plugin(
+        'rexswirlpipelineplugin', 
+        'https://cdn.jsdelivr.net/npm/phaser3-rex-plugins/dist/rexswirlpipelineplugin.min.js', 
+        true
+    );
 
         // animation UI
         this.scanTime = 1000 // scantime, affects time to scan and get new information
@@ -55,7 +61,7 @@ class Facility extends Phaser.Scene {
         this.univDamage = 5
         this.worldState = 'IDLE'
 
-        this.swirlPlugin = this.plugins.get('rexSwirlPipeline')
+        this.swirlPlugin = this.plugins.get('rexswirlpipelineplugin')
         // creates initial map
         this.map = this.add.tilemap('facilityTilemapJSON')
         const tileset_ground = this.map.addTilesetImage('tilesheet_ground01', 'facilityTilesetImage')
