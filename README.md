@@ -21,7 +21,7 @@ This project demonstrates advanced system design including a command-based repla
 - Prevented overshooting targets using dynamic speed adjustments
 ### Multi-Camera System
 - Implemented layered camera system with overlays and selective rendering
-Technical Highlights
+
 
 ## Command pattern implementation for time replay
 - Finite state machine architecture for AI behavior
