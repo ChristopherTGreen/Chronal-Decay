@@ -31,10 +31,10 @@ class EnemyEye extends Phaser.Physics.Arcade.Sprite {
 
         // behavior properties (more modular, more non-deterministic or behavioral)
         this.sensitivity = 5
-        this.trackingDist = 40 // tracking distance for both x/y (optional, good if the collision process removes the setVelocity to zero, and disabling firing)
+        this.trackingDist = 30 // tracking distance for both x/y (optional, good if the collision process removes the setVelocity to zero, and disabling firing)
         this.trackingMOE = 10 // margin of error for tracking dist, in which it starts going back and forth within this area (sensitive due to being tied to vel)
         this.watchingProb = 0.25 // likely hood to enter watching state when locating player
-        this.guidingMargin = 250.0 // margin of error for patrolling with semi-guidance tips
+        this.guidingMargin = 400.0 // margin of error for patrolling with semi-guidance tips
         this.freqTips = 15000.0 // frequency of tips in ms
 
         // behavioral distance properties
