@@ -26,6 +26,9 @@ This project demonstrates advanced system design including a command-based repla
 - Frame-based state tracking using delta time
 - Modular system design across gameplay features
 
+## Video Demonstration (Since the game can be incredibly difficult) (Extremely Compressed Video)
+https://github.com/user-attachments/assets/e2883ff4-e325-43bc-91ab-5a44807a4c16 
+
 ## My Takeways
 ### Gameplay
 Despite being a technically difficult game, I didn't realize how difficult the game would be intuitively to understand. Talking to developers at GDC, after I had finished most of the game, really helped shed light on the core issues of Chronal Decay. The game took inspiration from temporal mechanics, or at least my understanding of it. If time were to be able to be frozen, then that would include light particles, meaning no sight of anything around you unless you were to move against the light, and the game demonstrates this idea through a stretch modifier for the world. Of course, the effect would be limited and not instant due to playability reasons. Besides the visual side, forcing the player to have to go back to their past self after rewinding time, in order to continue back in linear time, felt interesting and fun, but due to the gameplay, became confusing. 
